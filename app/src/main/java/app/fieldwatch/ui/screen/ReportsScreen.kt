@@ -68,7 +68,7 @@ import app.fieldwatch.ui.FieldwatchUi
 import app.fieldwatch.ui.FieldwatchViewModel
 import app.fieldwatch.ui.component.FieldwatchSwitch
 import app.fieldwatch.ui.component.SectionCard
-import app.fieldwatch.ui.theme.Cyan
+import app.fieldwatch.ui.theme.BissaBlue
 import app.fieldwatch.ui.theme.LocalNightMode
 import app.fieldwatch.ui.theme.nightIf
 
@@ -817,7 +817,7 @@ private fun PathRadioRow(
                 Text(
                     note,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Cyan.nightIf(LocalNightMode.current),
+                    color = BissaBlue.nightIf(LocalNightMode.current),
                 )
             }
         }

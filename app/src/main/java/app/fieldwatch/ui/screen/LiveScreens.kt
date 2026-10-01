@@ -101,9 +101,9 @@ import app.fieldwatch.ui.component.RssiBar
 import app.fieldwatch.ui.component.Sparkline
 import app.fieldwatch.ui.component.TrendMark
 import app.fieldwatch.ui.component.rssiColor
-import app.fieldwatch.ui.theme.Cyan
+import app.fieldwatch.ui.theme.BissaBlue
 import app.fieldwatch.ui.theme.LocalNightMode
-import app.fieldwatch.ui.theme.PhosphorActive
+import app.fieldwatch.ui.theme.GoldActive
 import app.fieldwatch.ui.theme.nightIf
 import kotlin.math.cos
 import kotlin.math.sin
@@ -473,7 +473,7 @@ private fun OutlineGroupRow(
     val mute = MaterialTheme.colorScheme.onSurfaceVariant
     val mark = if (empty) mute else accent
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = if (indent) 0.dp else 1.dp,
         modifier = Modifier
@@ -837,7 +837,7 @@ private fun RadarView(
             }
 
             val now = System.currentTimeMillis()
-            val phosphor = PhosphorActive.nightIf(night)
+            val phosphor = GoldActive.nightIf(night)
             fun contact(device: Sighting, persist: Boolean = true): Triple<Offset, Color, Boolean>? {
                 val plotRssi = device.sortRssi(sort, windowMs, now)
                 if (!RadarPlot.onDisc(plotRssi.toInt(), maxR, z)) return null
@@ -1274,7 +1274,7 @@ private fun FleetNameChips(
             }
         }
         if (observed) {
-            val ink = Cyan.nightIf(LocalNightMode.current)
+            val ink = BissaBlue.nightIf(LocalNightMode.current)
             Surface(
                 shape = RoundedCornerShape(99.dp),
                 color = ink.copy(alpha = 0.22f),
@@ -1290,7 +1290,7 @@ private fun FleetNameChips(
             }
         }
         if (alerted) {
-            val mark = PhosphorActive.nightIf(LocalNightMode.current)
+            val mark = GoldActive.nightIf(LocalNightMode.current)
             Surface(
                 shape = RoundedCornerShape(99.dp),
                 color = mark.copy(alpha = 0.22f),
@@ -1430,7 +1430,7 @@ private fun TimelineView(
                 label = "alertFlash",
             )
             Surface(
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(4.dp),
                 color = rowColor,
                 modifier = Modifier
                     .fillMaxWidth()

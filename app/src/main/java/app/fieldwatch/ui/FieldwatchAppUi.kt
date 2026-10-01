@@ -847,7 +847,7 @@ private fun ViewPicker(
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 4.dp)
             .heightIn(max = panelMax),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(4.dp),
         color = surfaceColor,
         tonalElevation = 3.dp,
         shadowElevation = 8.dp,

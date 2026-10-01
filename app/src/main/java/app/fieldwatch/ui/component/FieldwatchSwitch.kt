@@ -12,7 +12,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import app.fieldwatch.ui.theme.LocalNightMode
-import app.fieldwatch.ui.theme.PhosphorActive
+import app.fieldwatch.ui.theme.GoldActive
 import app.fieldwatch.ui.theme.nightIf
 
 @Composable
@@ -24,7 +24,7 @@ fun FieldwatchSwitch(
 ) {
     val fill = spectreTileFill()
     val edge = spectreTileEdge()
-    val active = PhosphorActive.nightIf(LocalNightMode.current)
+    val active = GoldActive.nightIf(LocalNightMode.current)
     Box(
         modifier = modifier
             .requiredSize(width = 40.dp, height = 24.dp)

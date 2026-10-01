@@ -141,7 +141,7 @@ private fun Callout(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = 8.dp,
         border = BorderStroke(1.5.dp, border),

@@ -24,15 +24,15 @@ class NightColorTest {
 
     @Test
     fun phosphorConstantsUnchanged() {
-        assertEquals(0xFF3DFF9A.toInt(), Phosphor.toArgb())
-        assertEquals(0xFF35D683.toInt(), PhosphorActive.toArgb())
+        assertEquals(0xFFFFAD32.toInt(), Gold.toArgb())
+        assertEquals(0xFFFFAD32.toInt(), GoldActive.toArgb())
         assertEquals(0xFFFFB020.toInt(), Amber.toArgb())
     }
 
     @Test
     fun nightIfFalseIsIdentity() {
-        assertEquals(Phosphor, Phosphor.nightIf(false))
-        assertEquals(PhosphorActive, PhosphorActive.nightIf(false))
+        assertEquals(Gold, Gold.nightIf(false))
+        assertEquals(GoldActive, GoldActive.nightIf(false))
         assertEquals(Amber, Amber.nightIf(false))
         val chip = Color(0xFF5BA3D9)
         assertEquals(chip, chip.nightIf(false))

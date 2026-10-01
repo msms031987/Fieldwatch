@@ -223,7 +223,7 @@ private fun SignatureClassHeader(
     val accent = Color(Palette.color(colorIndex)).nightIf(LocalNightMode.current)
     Surface(
         onClick = onToggle,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp,
         modifier = Modifier.fillMaxWidth(),
@@ -256,7 +256,7 @@ private fun SignatureRow(fleet: Fleet, state: FieldwatchUi, vm: FieldwatchViewMo
     val liveHits = state.devices.count { fleet.id in it.fleetIds && !it.gone }
     Surface(
         onClick = { vm.editFleet(fleet) },
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp,
     ) {
@@ -527,7 +527,7 @@ private fun ColorPicker(selected: Int, onSelect: (Int) -> Unit) {
                 val fill = Color(argb).nightIf(LocalNightMode.current)
                 Surface(
                     onClick = { onSelect(index) },
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(4.dp),
                     color = fill,
                     border = BorderStroke(
                         width = if (on) 2.dp else 1.dp,

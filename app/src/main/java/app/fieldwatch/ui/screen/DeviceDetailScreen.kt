@@ -70,7 +70,7 @@ import app.fieldwatch.radio.BleAdParser
 import app.fieldwatch.ui.RadioKindMark
 import app.fieldwatch.ui.FieldwatchViewModel
 import app.fieldwatch.ui.theme.Amber
-import app.fieldwatch.ui.theme.Cyan
+import app.fieldwatch.ui.theme.BissaBlue
 import app.fieldwatch.ui.theme.LocalNightMode
 import app.fieldwatch.ui.theme.nightIf
 import app.fieldwatch.ui.component.PresenceTrack
@@ -636,7 +636,7 @@ private fun FamilyCard(hint: SignatureFamilyHint) {
     val muted = onContainer.copy(alpha = 0.78f)
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = container,
     ) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -681,7 +681,7 @@ private fun SignatureNotesCard(notes: List<Pair<String, String>>) {
     if (notes.isEmpty()) return
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
     ) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -710,10 +710,10 @@ private fun ObserverNotesCard(
     saveEnabled: Boolean,
     saved: Boolean,
 ) {
-    val ink = Cyan.nightIf(LocalNightMode.current)
+    val ink = BissaBlue.nightIf(LocalNightMode.current)
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = ink.copy(alpha = 0.18f),
         border = BorderStroke(1.5.dp, ink),
     ) {
@@ -781,7 +781,7 @@ private fun ExtraAttentionCard(notes: List<Pair<String, String>>) {
     val warn = Amber.nightIf(LocalNightMode.current)
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = warn.copy(alpha = 0.28f),
         border = BorderStroke(1.5.dp, warn),
     ) {
@@ -817,7 +817,7 @@ private fun ExtraAttentionCard(notes: List<Pair<String, String>>) {
 private fun GuessCard(guess: DeviceExplain.Guess) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
     ) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {

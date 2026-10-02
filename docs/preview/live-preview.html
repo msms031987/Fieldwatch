@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BISSA OpSec Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one phone-sized Live screen on a dark bench, with a spec strip beneath it.
+   Single committed look (BISSA dark): tokens set on :root, no light variant by choice. */
+:root{
+  --n4:#020D18; --n3:#001220; --n2:#0A1B2C;
+  --gold:#FFAD32; --blue:#4497C5; --green:#68C564; --red:#E53E3E; --orange:#FF8A4C;
+  --fg:#E6ECF2; --dim:rgba(255,255,255,.58); --faint:rgba(255,255,255,.32);
+  --line:rgba(255,173,50,.18); --line-blue:rgba(68,151,197,.22); --hair:rgba(255,255,255,.07);
+  --bench:#03060D;
+  --sans:'Montserrat',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bench);color:var(--fg);font-family:var(--sans)}
+body{padding-inline:16px;padding-block:28px 48px;display:flex;flex-direction:column;align-items:center;gap:22px;min-height:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.bench-top{width:100%;max-width:375px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.mark{font-size:17px;font-weight:700;letter-spacing:6px}.mark b{color:var(--gold);font-weight:700}
+.tag{font-size:8px;letter-spacing:2.4px;text-transform:uppercase;color:rgba(255,173,50,.55);border:1px solid var(--line);padding:4px 8px}
+
+.phone{width:100%;max-width:375px;height:760px;background:var(--n4);border:1px solid #16202c;border-radius:6px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 40px 100px rgba(0,0,0,.8)}
+.hdr{padding:12px 16px 10px;background:rgba(0,5,16,.98);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0}
+.hdr-brand{font-size:14px;font-weight:700;letter-spacing:3px}.hdr-brand span{color:var(--gold)}
+.hdr-sec{font-size:7px;font-weight:400;color:var(--faint);letter-spacing:2px;text-transform:uppercase;margin-top:3px;display:flex;align-items:center;gap:6px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(104,197,100,.15)}
+.dot.off{background:var(--gold);box-shadow:0 0 0 3px rgba(255,173,50,.15)}
+.dot.on{animation:blink 1.6s ease-in-out infinite}
+@keyframes blink{50%{opacity:.35}}
+.hdr-btns{display:flex;gap:7px}
+.hbtn{min-width:32px;height:32px;padding:0 8px;border:1px solid var(--line);background:rgba(255,173,50,.03);border-radius:2px;display:flex;align-items:center;justify-content:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.hbtn svg{width:15px;height:15px;stroke:var(--dim);stroke-width:1.5;fill:none}
+.hbtn[aria-pressed="true"]{border-color:rgba(255,173,50,.5);color:var(--gold)}.hbtn[aria-pressed="true"] svg{stroke:var(--gold)}
+
+.opts{padding:12px 16px;background:var(--n3);border-bottom:1px solid var(--hair);display:grid;gap:10px;flex-shrink:0}
+.opts[hidden]{display:none}
+.opt-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10px;color:var(--dim)}
+.opt-row small{display:block;font-size:8px;color:var(--faint);margin-top:2px;letter-spacing:.3px}
+.sw{width:34px;height:18px;border:1px solid var(--line);background:var(--n4);border-radius:2px;position:relative;flex-shrink:0}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;background:var(--faint);border-radius:1px;transition:transform .15s,background .15s}
+.sw[aria-checked="true"]{border-color:rgba(255,173,50,.5);background:rgba(255,173,50,.1)}
+.sw[aria-checked="true"]::after{transform:translateX(16px);background:var(--gold)}
+
+.views{display:flex;border-bottom:1px solid var(--hair);flex-shrink:0}
+.vtab{flex:1;padding:11px 4px 10px;font-size:8px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--faint);border-bottom:2px solid transparent}
+.vtab[aria-selected="true"]{color:var(--gold);border-bottom-color:var(--gold)}
+
+.summary{display:flex;gap:6px;padding:10px 16px 4px;flex-shrink:0;flex-wrap:wrap}
+.chip{font-size:8px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;padding:4px 8px;border:1px solid var(--hair);color:var(--dim);border-radius:2px;display:flex;align-items:center;gap:6px}
+.chip i{width:6px;height:6px;border-radius:50%;display:block}
+.chip.alert{border-color:rgba(229,62,62,.35);color:#FC8181;background:rgba(229,62,62,.06)}
+
+.body{flex:1;overflow-y:auto;overflow-x:hidden;min-height:0}
+.body::-webkit-scrollbar{width:2px}.body::-webkit-scrollbar-thumb{background:rgba(255,173,50,.25)}
+.sec{padding:14px 16px 8px;font-size:8px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+
+.row{margin:0 12px 6px;padding:10px 12px 9px;background:var(--n3);border:1px solid var(--hair);border-left:2px solid var(--acc,var(--blue));border-radius:3px;display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:start;width:calc(100% - 24px);text-align:left}
+.row:hover{border-color:var(--line-blue);border-left-color:var(--acc,var(--blue))}
+.glyph{width:30px;height:30px;border:1px solid color-mix(in srgb,var(--acc) 45%,transparent);background:color-mix(in srgb,var(--acc) 9%,transparent);border-radius:2px;display:flex;align-items:center;justify-content:center}
+.glyph svg{width:16px;height:16px;stroke:var(--acc);stroke-width:1.6;fill:none}
+.t{font-size:12px;font-weight:600;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s{font-size:9px;color:var(--faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+.tag-c{font-size:7px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;padding:2px 6px;border-radius:2px;border:1px solid}
+.tag-c.watch{color:var(--gold);border-color:rgba(255,173,50,.4);background:rgba(255,173,50,.07)}
+.tag-c.att{color:#FC8181;border-color:rgba(229,62,62,.4);background:rgba(229,62,62,.07)}
+.tag-c.cls{color:var(--blue);border-color:var(--line-blue);background:rgba(68,151,197,.06)}
+.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.num b{display:block;font-size:15px;font-weight:700;color:var(--acc)}
+.num span{display:block;font-size:9px;color:var(--faint);margin-top:2px}
+.bar{grid-column:1/-1;height:3px;background:rgba(255,255,255,.06);border-radius:1px;margin-top:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc)}
+
+.radar-wrap{padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px}
+canvas{width:100%;max-width:330px;aspect-ratio:1;display:block}
+.legend{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint)}
+.legend span{display:flex;align-items:center;gap:5px}.legend i{width:7px;height:7px;border-radius:50%}
+
+.grp{margin:0 12px 6px;border:1px solid var(--hair);border-radius:3px;background:var(--n3);overflow:hidden}
+.grp-h{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;text-align:left}
+.grp-h .glyph{width:24px;height:24px}.grp-h .glyph svg{width:13px;height:13px}
+.grp-h .n{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.grp-h .nm{font-size:10px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase}
+.grp-b{border-top:1px solid var(--hair)}
+.grp-b[hidden]{display:none}
+.mini{display:flex;justify-content:space-between;gap:10px;padding:8px 12px 8px 46px;font-size:10px;color:var(--dim);border-bottom:1px solid var(--hair)}
+.mini:last-child{border-bottom:0}.mini b{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums}
+
+.tl{padding:6px 16px 20px;display:grid;gap:0}
+.tl-r{display:grid;grid-template-columns:44px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--hair);font-size:10px;color:var(--dim)}
+.tl-r time{font-family:var(--mono);color:var(--faint);font-size:9px;padding-top:1px}
+.tl-r strong{color:var(--fg);font-weight:600;display:block;font-size:11px;margin-bottom:2px}
+
+.bnav{height:62px;background:rgba(0,5,16,.98);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding-top:9px;flex-shrink:0}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.ni svg{width:19px;height:19px;stroke:var(--dim);stroke-width:1.5;fill:none}
+.ni span{font-size:7px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint)}
+.ni[aria-current="page"] svg{stroke:var(--gold)}.ni[aria-current="page"] span{color:var(--gold)}
+
+.spec{width:100%;max-width:375px;display:grid;gap:14px}
+.spec h2{font-size:8px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sw-c{border:1px solid var(--hair);border-radius:2px;overflow:hidden;font-size:8px;color:var(--dim)}
+.sw-c i{display:block;height:28px}.sw-c span{display:block;padding:5px 6px;font-family:var(--mono);letter-spacing:.4px}
+.note{font-size:10px;line-height:1.75;color:var(--dim)}
+@media (prefers-reduced-motion:reduce){.dot.on{animation:none}}
+</style>
+</head><body>
+
+<div class="bench-top"><div class="mark">BISSA<b> OpSec</b></div><div class="tag">Preview · Live</div></div>
+
+<div class="phone" id="phone">
+  <header class="hdr">
+    <div>
+      <div class="hdr-brand">BISSA <span>OPSEC</span></div>
+      <div class="hdr-sec"><i class="dot on" id="dot"></i><span id="state">Scanning · Wi-Fi + BLE</span></div>
+    </div>
+    <div class="hdr-btns">
+      <button class="hbtn" aria-label="Radios in range"><svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 0 1 14 0M8 12a4 4 0 0 1 8 0"/><circle cx="12" cy="12" r="1"/></svg><span id="count">9</span></button>
+      <button class="hbtn" id="tune" aria-pressed="false" aria-label="Show scan options"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
+    </div>
+  </header>
+
+  <section class="opts" id="opts" hidden aria-label="Scan options">
+    <div class="opt-row"><div>Arrivals only<small>Hide radios already seen this session</small></div><button class="sw" role="switch" aria-checked="false" aria-label="Arrivals only"></button></div>
+    <div class="opt-row"><div>Moving with you<small>Flag radios that follow your GPS track</small></div><button class="sw" role="switch" aria-checked="true" aria-label="Moving with you"></button></div>
+    <div class="opt-row"><div>Privacy mode<small>Mask MAC addresses on screen</small></div><button class="sw" role="switch" aria-checked="true" aria-label="Privacy mode"></button></div>
+  </section>
+
+  <div class="views" role="tablist" aria-label="Live views">
+    <button class="vtab" role="tab" aria-selected="true" data-v="list">List</button>
+    <button class="vtab" role="tab" aria-selected="false" data-v="radar">Radar</button>
+    <button class="vtab" role="tab" aria-selected="false" data-v="outline">Classes</button>
+    <button class="vtab" role="tab" aria-selected="false" data-v="time">Timeline</button>
+  </div>
+
+  <div class="summary">
+    <div class="chip alert"><i style="background:var(--red)"></i>2 need attention</div>
+    <div class="chip"><i style="background:var(--gold)"></i>1 watchlist</div>
+    <div class="chip"><i style="background:var(--blue)"></i>9 in range</div>
+  </div>
+
+  <main class="body" id="body"></main>
+
+  <nav class="bnav" aria-label="Sections">
+    <button class="ni" aria-current="page"><svg viewBox="0 0 24 24"><path d="M12 3v18M7 8a7 7 0 0 0 0 8M17 8a7 7 0 0 1 0 8M4 5a11 11 0 0 0 0 14M20 5a11 11 0 0 1 0 14"/></svg><span id="navlive">Live</span></button>
+    <button class="ni"><svg viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4-2v-4z"/></svg><span>Filters</span></button>
+    <button class="ni"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="20" r="2"/><path d="M7 7l3 3M17 7l-3 3M12 14.5V18"/></svg><span>Signatures</span></button>
+    <button class="ni"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg><span>Reports</span></button>
+    <button class="ni"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg><span>Settings</span></button>
+  </nav>
+</div>
+
+<section class="spec" aria-label="Design notes">
+  <h2>Palette used</h2>
+  <div class="swatches">
+    <div class="sw-c"><i style="background:#020D18"></i><span>#020D18</span></div>
+    <div class="sw-c"><i style="background:#001220"></i><span>#001220</span></div>
+    <div class="sw-c"><i style="background:#FFAD32"></i><span>#FFAD32</span></div>
+    <div class="sw-c"><i style="background:#4497C5"></i><span>#4497C5</span></div>
+    <div class="sw-c"><i style="background:#68C564"></i><span>#68C564</span></div>
+    <div class="sw-c"><i style="background:#FF8A4C"></i><span>#FF8A4C</span></div>
+    <div class="sw-c"><i style="background:#E53E3E"></i><span>#E53E3E</span></div>
+    <div class="sw-c"><i style="background:#0A1B2C"></i><span>#0A1B2C</span></div>
+  </div>
+  <p class="note">Same structure as the Fieldwatch Live screen: header with scan controls, four views (list, radar, classes, timeline), five-tab bottom bar. Device names, MACs and signal values are sample data. Try the tune button, the view tabs and the Pause tab.</p>
+</section>
+
+<script>
+(function(){
+  var D=[
+    {t:'AirTag-class tracker',s:'Apple · Find My · F4:0B:…:2A',c:'Tracker',rssi:-48,avg:-52,col:'var(--red)',att:1,w:0,ic:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8v4l2.5 2'},
+    {t:'Hikvision DS-2CD',s:'Wi-Fi AP · ch 6 · 2437 MHz',c:'Camera',rssi:-57,avg:-60,col:'var(--orange)',att:1,w:0,ic:'M4 8h12v8H4zM16 11l5-3v8l-5-3'},
+    {t:'Nearby watch · Tactical',s:'BLE · Garmin · fēnix',c:'Wearable',rssi:-62,avg:-64,col:'var(--gold)',att:0,w:1,ic:'M8 3h8l1 4H7zM7 17h10l-1 4H8zM7 7h10v10H7z'},
+    {t:'JBL Flip 6',s:'BLE · Harman · audio',c:'Audio',rssi:-66,avg:-68,col:'var(--blue)',att:0,w:0,ic:'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'},
+    {t:'Ring Doorbell 4',s:'Wi-Fi AP · ch 11',c:'Camera',rssi:-71,avg:-73,col:'var(--orange)',att:0,w:0,ic:'M4 8h12v8H4zM16 11l5-3v8l-5-3'},
+    {t:'Galaxy Buds2',s:'BLE · Samsung · earbuds',c:'Audio',rssi:-74,avg:-76,col:'var(--blue)',att:0,w:0,ic:'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'},
+    {t:'Meta Ray-Ban',s:'BLE · Luxottica · glasses',c:'Wearable',rssi:-79,avg:-80,col:'var(--gold)',att:0,w:0,ic:'M8 3h8l1 4H7zM7 17h10l-1 4H8zM7 7h10v10H7z'},
+    {t:'TP-Link Deco',s:'Wi-Fi AP · ch 1 · 2412 MHz',c:'Router',rssi:-83,avg:-84,col:'var(--green)',att:0,w:0,ic:'M5 12a10 10 0 0 1 14 0M8 15a6 6 0 0 1 8 0M12 19h.01'},
+    {t:'Unnamed BLE beacon',s:'BLE · random address',c:'Unknown',rssi:-88,avg:-90,col:'var(--faint)',att:0,w:0,ic:'M12 3l9 16H3z'}
+  ];
+  var body=document.getElementById('body'),view='list',paused=false;
+  function pct(r){return Math.max(6,Math.min(100,(r+95)*100/55))}
+  function row(d){
+    return '<button class="row" style="--acc:'+d.col+'"><span class="glyph"><svg viewBox="0 0 24 24"><path d="'+d.ic+'"/></svg></span>'+
+    '<span style="min-width:0"><div class="t">'+d.t+'</div><div class="s">'+d.s+'</div>'+
+    '<div class="tags"><span class="tag-c cls">'+d.c+'</span>'+(d.att?'<span class="tag-c att">Attention</span>':'')+(d.w?'<span class="tag-c watch">Watchlist</span>':'')+'</div></span>'+
+    '<span class="num"><b>'+d.rssi+'</b><span>avg '+d.avg+'</span></span>'+
+    '<span class="bar"><i style="width:'+pct(d.rssi)+'%"></i></span></button>';
+  }
+  function renderList(){body.innerHTML='<div class="sec">Strongest first</div>'+D.map(row).join('')+'<div style="height:14px"></div>'}
+  var raf=0;
+  function renderRadar(){
+    body.innerHTML='<div class="radar-wrap"><canvas id="cv" width="660" height="660" aria-label="Radar of radios by signal strength"></canvas><div class="legend"><span><i style="background:var(--red)"></i>Attention</span><span><i style="background:var(--orange)"></i>Camera</span><span><i style="background:var(--gold)"></i>Watch</span><span><i style="background:var(--blue)"></i>Other</span></div></div>';
+    var cv=document.getElementById('cv'),x=cv.getContext('2d'),W=660,C=W/2,R=300,a0=0;
+    var css=getComputedStyle(document.documentElement);
+    function v(n){return css.getPropertyValue(n).trim()}
+    var map={'var(--red)':v('--red'),'var(--orange)':v('--orange'),'var(--gold)':v('--gold'),'var(--blue)':v('--blue'),'var(--green)':v('--green'),'var(--faint)':'#6b7785'};
+    var pts=D.map(function(d,i){var ang=(i*137.5)*Math.PI/180,r=(-d.rssi-40)/55*R*0.95+20;return{x:C+Math.cos(ang)*r,y:C+Math.sin(ang)*r,c:map[d.col]||v('--blue'),big:d.att}});
+    var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function frame(){
+      x.clearRect(0,0,W,W);
+      x.strokeStyle='rgba(68,151,197,.22)';x.lineWidth=1.5;
+      [.25,.5,.75,1].forEach(function(f){x.beginPath();x.arc(C,C,R*f,0,7);x.stroke()});
+      x.beginPath();x.moveTo(C-R,C);x.lineTo(C+R,C);x.moveTo(C,C-R);x.lineTo(C,C+R);x.stroke();
+      x.fillStyle='rgba(255,255,255,.35)';x.font='500 20px JetBrains Mono, monospace';x.textAlign='left';
+      [['-50',.25],['-65',.5],['-80',.75],['-95',1]].forEach(function(p){x.fillText(p[0],C+4,C-R*p[1]+20)});
+      var g=x.createConicGradient(a0-1.1,C,C);g.addColorStop(0,'rgba(255,173,50,0)');g.addColorStop(.17,'rgba(255,173,50,.28)');g.addColorStop(.175,'rgba(255,173,50,0)');g.addColorStop(1,'rgba(255,173,50,0)');
+      x.fillStyle=g;x.beginPath();x.arc(C,C,R,0,7);x.fill();
+      x.strokeStyle='rgba(255,173,50,.8)';x.lineWidth=2;x.beginPath();x.moveTo(C,C);x.lineTo(C+Math.cos(a0)*R,C+Math.sin(a0)*R);x.stroke();
+      pts.forEach(function(p){x.fillStyle=p.c;x.globalAlpha=.2;x.beginPath();x.arc(p.x,p.y,p.big?20:14,0,7);x.fill();x.globalAlpha=1;x.beginPath();x.arc(p.x,p.y,p.big?8:6,0,7);x.fill()});
+      x.fillStyle='#FFAD32';x.beginPath();x.arc(C,C,7,0,7);x.fill();
+      if(!paused&&!reduce)a0+=0.025;
+      raf=requestAnimationFrame(frame);
+    }
+    frame();
+  }
+  function renderOutline(){
+    var g={};D.forEach(function(d){(g[d.c]=g[d.c]||[]).push(d)});
+    body.innerHTML='<div class="sec">By class</div>'+Object.keys(g).map(function(k,i){
+      var a=g[k],d=a[0];
+      return '<div class="grp"><button class="grp-h" style="--acc:'+d.col+'" aria-expanded="'+(i===0)+'"><span class="glyph"><svg viewBox="0 0 24 24"><path d="'+d.ic+'"/></svg></span><span class="nm">'+k+'</span><span class="n">'+a.length+'</span></button><div class="grp-b"'+(i===0?'':' hidden')+'>'+a.map(function(x){return '<div class="mini"><span>'+x.t+'</span><b>'+x.rssi+'</b></div>'}).join('')+'</div></div>';
+    }).join('');
+    body.querySelectorAll('.grp-h').forEach(function(h){h.onclick=function(){var b=h.nextElementSibling,o=b.hidden;b.hidden=!o;h.setAttribute('aria-expanded',String(o))}});
+  }
+  function renderTime(){
+    var ev=[['20:41','AirTag-class tracker','Moving with you for 6 min · −48 dBm'],['20:39','Hikvision DS-2CD','Matched camera signature · Wi-Fi ch 6'],['20:36','Nearby watch · Tactical','Watchlist match · first seen'],['20:31','JBL Flip 6','New radio · BLE audio'],['20:28','Ring Doorbell 4','New radio · Wi-Fi AP'],['20:22','Unnamed BLE beacon','Random address · seen 3 times']];
+    body.innerHTML='<div class="sec">Last 20 minutes</div><div class="tl">'+ev.map(function(e){return '<div class="tl-r"><time>'+e[0]+'</time><div><strong>'+e[1]+'</strong>'+e[2]+'</div></div>'}).join('')+'</div>';
+  }
+  function show(v){cancelAnimationFrame(raf);view=v;({list:renderList,radar:renderRadar,outline:renderOutline,time:renderTime})[v]()}
+  document.querySelectorAll('.vtab').forEach(function(b){b.onclick=function(){document.querySelectorAll('.vtab').forEach(function(t){t.setAttribute('aria-selected',String(t===b))});show(b.dataset.v)}});
+  var tune=document.getElementById('tune'),opts=document.getElementById('opts');
+  tune.onclick=function(){var o=opts.hidden;opts.hidden=!o;tune.setAttribute('aria-pressed',String(o));tune.setAttribute('aria-label',o?'Hide scan options':'Show scan options')};
+  document.querySelectorAll('.sw').forEach(function(s){s.onclick=function(){s.setAttribute('aria-checked',String(s.getAttribute('aria-checked')!=='true'))}});
+  var live=document.querySelector('.ni'),dot=document.getElementById('dot'),st=document.getElementById('state'),nl=document.getElementById('navlive');
+  live.onclick=function(){paused=!paused;dot.className='dot'+(paused?' off':' on');st.textContent=paused?'Display paused':'Scanning · Wi-Fi + BLE';nl.textContent=paused?'Resume':'Pause'};
+  nl.textContent='Pause';
+  show('list');
+})();
+</script>
+
+</body></html>

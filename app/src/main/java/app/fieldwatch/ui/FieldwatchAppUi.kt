@@ -118,6 +118,7 @@ import androidx.navigation.compose.rememberNavController
 import app.fieldwatch.domain.ListLine
 import app.fieldwatch.domain.ListSort
 import app.fieldwatch.domain.StrengthSort
+import app.fieldwatch.domain.Sighting
 import app.fieldwatch.domain.ViewMode
 import app.fieldwatch.domain.FieldwatchDisclaimer
 import app.fieldwatch.domain.disclaimerOk

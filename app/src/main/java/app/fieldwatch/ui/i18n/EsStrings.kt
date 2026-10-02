@@ -170,10 +170,20 @@ object EsStrings {
         "Open Live" to "Abrir En vivo",
         "Lens finder" to "Buscador de lentes",
         "IR check" to "Revisión IR",
-        "Lens finder: the torch lights the room and a camera lens sends a small bright glint straight back. Sweep slowly across walls, shelves, outlets, clocks and smoke detectors." to
-            "Buscador de lentes: la linterna ilumina el cuarto y la lente de una cámara devuelve un pequeño destello brillante. Recorré despacio paredes, estantes, enchufes, relojes y detectores de humo.",
-        "IR check: in a dark room, some front cameras show infrared LEDs as a faint bright dot. Many phones filter infrared out, so seeing nothing means little." to
-            "Revisión IR: en un cuarto oscuro, algunas cámaras frontales muestran los LEDs infrarrojos como un punto brillante tenue. Muchos teléfonos filtran el infrarrojo, así que no ver nada significa poco.",
+        "Lens finder: turn the room lights off. The torch blinks on and off: a lens throws the torch back, so its glint shows only while the torch is on. Lit LEDs, lamps and screens shine with the torch off too and are ignored. Sweep slowly across walls, shelves, outlets, clocks and smoke detectors." to
+            "Buscador de lentes: apagá las luces del cuarto. La linterna parpadea: una lente devuelve la luz de la linterna, así que su destello aparece solo con la linterna encendida. Los LEDs encendidos, las lámparas y las pantallas brillan también con la linterna apagada y se ignoran. Recorré despacio paredes, estantes, enchufes, relojes y detectores de humo.",
+        "IR check: in a dark room, some cameras show infrared LEDs as a faint bright dot. First test the camera: point a TV remote at the lens and press a button. If you see a light on screen, that camera sees infrared. Many cameras filter it out, so seeing nothing means little." to
+            "Revisión IR: en un cuarto oscuro, algunas cámaras muestran los LEDs infrarrojos como un punto brillante tenue. Primero probá la cámara: apuntá un control remoto de TV a la lente y apretá un botón. Si ves una luz en la pantalla, esa cámara ve infrarrojo. Muchas lo filtran, así que no ver nada significa poco.",
+        "Front camera" to "Cámara frontal",
+        "Back camera" to "Cámara trasera",
+        "The room is bright." to "El cuarto está iluminado.",
+        "Turn off the lights for fewer false alarms." to "Apagá las luces para tener menos falsas alarmas.",
+        "Dark enough." to "Suficientemente oscuro.",
+        "This camera has no torch, so the blink test is off. Results will include lit LEDs and lamps." to
+            "Esta cámara no tiene linterna, así que la prueba de parpadeo está desactivada. Los resultados incluirán LEDs encendidos y lámparas.",
+        "Tap a marked spot to dismiss it while you hold still." to
+            "Tocá un punto marcado para descartarlo mientras mantenés firme el teléfono.",
+        "Show dismissed spots" to "Mostrar los puntos descartados",
         "Allow camera" to "Permitir la cámara",
         "Start" to "Iniciar",
         "Stop" to "Detener",

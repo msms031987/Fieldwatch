@@ -48,6 +48,7 @@ object GlintDetector {
         height: Int,
         minContrast: Int = 70,
         maxArea: Int = 30,
+        maxAspect: Float = 2.5f,
     ): List<Glint> {
         val n = width * height
         if (n == 0 || luma.size < n) return emptyList()
@@ -90,6 +91,11 @@ object GlintDetector {
                 if (py < height - 1 && mask[p + width] && !seen[p + width]) { seen[p + width] = true; stack[sp++] = p + width }
             }
             if (area < 2 || area > maxArea) continue
+            // Lens glints are small and compact. Thin streaks and ragged shapes are glossy edges.
+            val bw = maxX - minX + 1
+            val bh = maxY - minY + 1
+            val aspect = maxOf(bw, bh).toFloat() / minOf(bw, bh)
+            if (aspect > maxAspect || area < bw * bh * 0.5f) continue
             // Isolated: few other bright pixels in a ring around it, so it is not part of a lit area.
             var around = 0
             val x0 = (minX - 3).coerceAtLeast(0)
@@ -147,6 +153,58 @@ class GlintTracker(
     }
 
     fun reset() = tracks.clear()
+}
+
+object GlintDiff {
+    /** Keeps glints from a torch-on frame that have no match in the torch-off frames. */
+    fun dropEmissive(on: List<Glint>, off: List<Glint>, radius: Float = 0.05f): List<Glint> =
+        on.filter { g -> off.none { abs(it.x - g.x) + abs(it.y - g.y) <= radius } }
+}
+
+/**
+ * Lens finder with the torch blinking: a lens throws the torch back, so its glint exists only
+ * while the torch is on. A lit LED, lamp or screen shines with the torch off too, and is dropped.
+ *
+ * Each cycle is [offMs] with the torch off, then [onMs] with it on. Frames in the first
+ * [settleMs] after a switch are ignored while the camera adjusts. The torch must be driven from
+ * [torchShouldBeOn]; frames go to [onFrame]. The cycle starts off so a baseline exists before any
+ * torch-on frame is judged.
+ */
+class LensScanner(
+    private val startMs: Long,
+    private val offMs: Long = 500,
+    private val onMs: Long = 700,
+    private val settleMs: Long = 250,
+) {
+    private val tracker = GlintTracker(matchRadius = 0.05f, confirmHits = 4, maxMissed = 3)
+    private var offGlints: List<Glint> = emptyList()
+    private var offWindowOpen = false
+    private var haveBaseline = false
+    private var shown: List<GlintTracker.Candidate> = emptyList()
+
+    private fun position(nowMs: Long): Long = (nowMs - startMs).mod(offMs + onMs)
+
+    fun torchShouldBeOn(nowMs: Long): Boolean = position(nowMs) >= offMs
+
+    private fun settled(nowMs: Long): Boolean {
+        val pos = position(nowMs)
+        return if (pos < offMs) pos >= settleMs else pos - offMs >= settleMs
+    }
+
+    /** Candidates to show. Held through torch-off windows so the marks do not flicker. */
+    fun onFrame(glints: List<Glint>, nowMs: Long): List<GlintTracker.Candidate> {
+        if (!settled(nowMs)) return shown
+        if (torchShouldBeOn(nowMs)) {
+            offWindowOpen = false
+            if (!haveBaseline) return shown
+            shown = tracker.update(GlintDiff.dropEmissive(glints, offGlints))
+        } else {
+            offGlints = if (offWindowOpen) offGlints + glints else glints
+            offWindowOpen = true
+            haveBaseline = true
+        }
+        return shown
+    }
 }
 
 enum class MagneticLevel { NORMAL, ELEVATED, STRONG }

@@ -140,4 +140,67 @@ class SweepTest {
         for (i in 0 until 20) noisy.add(0f, 0f, if (i % 2 == 0) 46f else 50f, i * 50_000_000L)
         assertTrue(noisy.fluctuating())
     }
+
+    @Test
+    fun thinStreakIsNotAGlint() {
+        val w = 160; val h = 120
+        val f = frame(w, h)
+        for (x in 40..51) f[60 * w + x] = 255.toByte()
+        assertTrue(GlintDetector.detect(f, w, h).isEmpty())
+    }
+
+    private val glint = listOf(Glint(0.5f, 0.5f, 4, 255))
+
+    @Test
+    fun scannerConfirmsAGlintThatExistsOnlyWithTheTorchOn() {
+        val s = LensScanner(startMs = 0)
+        var out = emptyList<GlintTracker.Candidate>()
+        for (t in 0 until 3600 step 50) {
+            val g = if (s.torchShouldBeOn(t.toLong())) glint else emptyList()
+            out = s.onFrame(g, t.toLong())
+        }
+        assertTrue(out.any { it.confirmed })
+    }
+
+    @Test
+    fun scannerDropsALitLedThatShinesWithTheTorchOff() {
+        val s = LensScanner(startMs = 0)
+        for (t in 0 until 3600 step 50) {
+            assertTrue(s.onFrame(glint, t.toLong()).isEmpty())
+        }
+    }
+
+    @Test
+    fun scannerIgnoresFramesWhileTheCameraSettlesAfterSwitchingOn() {
+        val s = LensScanner(startMs = 0)
+        var out = emptyList<GlintTracker.Candidate>()
+        for (t in 0 until 3600 step 50) {
+            val pos = t % 1200
+            out = s.onFrame(if (pos in 500..749) glint else emptyList(), t.toLong())
+        }
+        assertTrue(out.isEmpty())
+    }
+
+    @Test
+    fun scannerHoldsConfirmedMarksThroughTheTorchOffWindow() {
+        val s = LensScanner(startMs = 0)
+        var out = emptyList<GlintTracker.Candidate>()
+        // Ends at t = 2800: position 400 of the third cycle, torch off.
+        for (t in 0..2800 step 50) {
+            val g = if (s.torchShouldBeOn(t.toLong())) glint else emptyList()
+            out = s.onFrame(g, t.toLong())
+        }
+        assertFalse(s.torchShouldBeOn(2800))
+        assertTrue(out.any { it.confirmed })
+    }
+
+    @Test
+    fun torchCycleStartsOffThenOn() {
+        val s = LensScanner(startMs = 1000)
+        assertFalse(s.torchShouldBeOn(1000))
+        assertFalse(s.torchShouldBeOn(1499))
+        assertTrue(s.torchShouldBeOn(1500))
+        assertTrue(s.torchShouldBeOn(2199))
+        assertFalse(s.torchShouldBeOn(2200))
+    }
 }

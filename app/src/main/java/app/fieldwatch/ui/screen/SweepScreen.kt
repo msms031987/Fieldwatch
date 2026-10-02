@@ -7,6 +7,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.SystemClock
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.Camera
@@ -16,6 +17,7 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +54,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -60,8 +63,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import app.fieldwatch.domain.Glint
 import app.fieldwatch.domain.GlintDetector
 import app.fieldwatch.domain.GlintTracker
+import app.fieldwatch.domain.LensScanner
 import app.fieldwatch.domain.MagneticLevel
 import app.fieldwatch.domain.MagneticMeter
 import app.fieldwatch.domain.SignatureClass
@@ -77,6 +82,9 @@ import app.fieldwatch.ui.theme.BissaBlue
 import app.fieldwatch.ui.theme.SignalRed
 import app.fieldwatch.ui.theme.Slate
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.abs
+import kotlinx.coroutines.delay
 
 /**
  * Sweep: a prototype toolbox for checking a room. Every tool here narrows where to look with
@@ -165,12 +173,13 @@ private fun LensFinder() {
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
     var running by rememberSaveable { mutableStateOf(false) }
     var mode by rememberSaveable { mutableStateOf(LensMode.LENS) }
+    var irFront by rememberSaveable { mutableStateOf(true) }
 
     Text(
         if (mode == LensMode.LENS) {
-            tr("Lens finder: the torch lights the room and a camera lens sends a small bright glint straight back. Sweep slowly across walls, shelves, outlets, clocks and smoke detectors.")
+            tr("Lens finder: turn the room lights off. The torch blinks on and off: a lens throws the torch back, so its glint shows only while the torch is on. Lit LEDs, lamps and screens shine with the torch off too and are ignored. Sweep slowly across walls, shelves, outlets, clocks and smoke detectors.")
         } else {
-            tr("IR check: in a dark room, some front cameras show infrared LEDs as a faint bright dot. Many phones filter infrared out, so seeing nothing means little.")
+            tr("IR check: in a dark room, some cameras show infrared LEDs as a faint bright dot. First test the camera: point a TV remote at the lens and press a button. If you see a light on screen, that camera sees infrared. Many cameras filter it out, so seeing nothing means little.")
         },
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -187,6 +196,20 @@ private fun LensFinder() {
             label = { Text(tr("IR check")) },
         )
     }
+    if (mode == LensMode.IR) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FieldwatchFilterChip(
+                selected = irFront,
+                onClick = { irFront = true },
+                label = { Text(tr("Front camera")) },
+            )
+            FieldwatchFilterChip(
+                selected = !irFront,
+                onClick = { irFront = false },
+                label = { Text(tr("Back camera")) },
+            )
+        }
+    }
     when {
         !granted -> FieldwatchActionButton(
             onClick = { launcher.launch(Manifest.permission.CAMERA) },
@@ -197,7 +220,8 @@ private fun LensFinder() {
             modifier = Modifier.fillMaxWidth(),
         ) { Text(tr("Start")) }
         else -> {
-            CameraPane(mode)
+            AmbientLightNote(maxLux = if (mode == LensMode.LENS) 40f else 15f)
+            CameraPane(mode, irFront)
             FieldwatchActionButton(
                 onClick = { running = false },
                 modifier = Modifier.fillMaxWidth(),
@@ -206,18 +230,56 @@ private fun LensFinder() {
     }
 }
 
+/** Says whether the room is dark enough. Bright rooms add reflections of other lights. */
 @Composable
-private fun CameraPane(mode: LensMode) {
+private fun AmbientLightNote(maxLux: Float) {
+    val context = LocalContext.current
+    val manager = remember { context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager }
+    val sensor = remember { manager?.getDefaultSensor(Sensor.TYPE_LIGHT) }
+    var lux by remember { mutableStateOf<Float?>(null) }
+    DisposableEffect(Unit) {
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                lux = event.values[0]
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+        }
+        if (manager != null && sensor != null) {
+            manager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+        }
+        onDispose { manager?.unregisterListener(listener) }
+    }
+    val value = lux ?: return
+    val bright = value > maxLux
+    Text(
+        if (bright) {
+            tr("The room is bright.") + " (${value.toInt()} lux) " + tr("Turn off the lights for fewer false alarms.")
+        } else {
+            tr("Dark enough.") + " (${value.toInt()} lux)"
+        },
+        style = MaterialTheme.typography.labelMedium,
+        color = if (bright) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+@Composable
+private fun CameraPane(mode: LensMode, irFront: Boolean) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
-    val front = mode == LensMode.IR
+    val front = mode == LensMode.IR && irFront
     val previewView = remember {
         PreviewView(context).apply { scaleType = PreviewView.ScaleType.FIT_CENTER }
     }
-    val tracker = remember { GlintTracker() }
     var camera by remember { mutableStateOf<Camera?>(null) }
+    var hasTorch by remember { mutableStateOf(false) }
     var candidates by remember { mutableStateOf<List<GlintTracker.Candidate>>(emptyList()) }
     var failure by remember { mutableStateOf<String?>(null) }
+    var dismissed by remember { mutableStateOf<List<Offset>>(emptyList()) }
+    val scanner = remember(mode, front) { LensScanner(SystemClock.elapsedRealtime()) }
+    val plainTracker = remember(mode, front) { GlintTracker() }
+    val useScanner = remember { AtomicBoolean(false) }
+    useScanner.set(mode == LensMode.LENS && hasTorch)
 
     DisposableEffect(front) {
         val executor = Executors.newSingleThreadExecutor()
@@ -235,12 +297,20 @@ private fun CameraPane(mode: LensMode) {
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
                 analysis.setAnalyzer(executor) { image ->
-                    val found = analyze(image, tracker, front)
-                    mainExecutor.execute { candidates = found }
+                    val frame = readFrame(image) ?: return@setAnalyzer
+                    val found = if (useScanner.get()) {
+                        scanner.onFrame(frame.glints, SystemClock.elapsedRealtime())
+                    } else {
+                        plainTracker.update(frame.glints)
+                    }
+                    val shown = found.map { toDisplay(it, frame.rotation, front) }
+                    mainExecutor.execute { candidates = shown }
                 }
                 val selector = if (front) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
                 p.unbindAll()
-                camera = p.bindToLifecycle(owner, selector, preview, analysis)
+                val bound = p.bindToLifecycle(owner, selector, preview, analysis)
+                camera = bound
+                hasTorch = bound.cameraInfo.hasFlashUnit()
                 failure = null
             } catch (e: Exception) {
                 failure = e.message ?: e.javaClass.simpleName
@@ -249,24 +319,70 @@ private fun CameraPane(mode: LensMode) {
         onDispose {
             provider?.unbindAll()
             executor.shutdown()
-            tracker.reset()
             camera = null
+            hasTorch = false
         }
     }
 
+    // Lens finder: a darker exposure so only strong reflections stand out. Otherwise default.
     LaunchedEffect(camera, mode) {
         val cam = camera ?: return@LaunchedEffect
-        if (cam.cameraInfo.hasFlashUnit()) cam.cameraControl.enableTorch(mode == LensMode.LENS)
+        val state = cam.cameraInfo.exposureState
+        if (state.isExposureCompensationSupported) {
+            val step = state.exposureCompensationStep.toFloat()
+            val range = state.exposureCompensationRange
+            val index = if (mode == LensMode.LENS && step > 0f) {
+                Math.round(-2f / step).coerceIn(range.lower, range.upper)
+            } else {
+                0
+            }
+            cam.cameraControl.setExposureCompensationIndex(index)
+        }
     }
 
+    // Torch blinks in the Lens finder; stays off in the IR check.
+    LaunchedEffect(camera, mode, hasTorch) {
+        val cam = camera ?: return@LaunchedEffect
+        if (!hasTorch) return@LaunchedEffect
+        if (mode != LensMode.LENS) {
+            cam.cameraControl.enableTorch(false)
+            return@LaunchedEffect
+        }
+        var last: Boolean? = null
+        while (true) {
+            val on = scanner.torchShouldBeOn(SystemClock.elapsedRealtime())
+            if (on != last) {
+                cam.cameraControl.enableTorch(on)
+                last = on
+            }
+            delay(40)
+        }
+    }
+
+    val visible = candidates.filter { c ->
+        dismissed.none { abs(it.x - c.x) + abs(it.y - c.y) < 0.06f }
+    }
     Box(
         Modifier
             .fillMaxWidth()
             .aspectRatio(3f / 4f),
     ) {
         AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
-        Canvas(Modifier.fillMaxSize()) {
-            candidates.forEach { c ->
+        Canvas(
+            Modifier
+                .fillMaxSize()
+                .pointerInput(visible) {
+                    detectTapGestures { tap ->
+                        val x = tap.x / size.width
+                        val y = tap.y / size.height
+                        visible
+                            .filter { abs(it.x - x) + abs(it.y - y) < 0.12f }
+                            .minByOrNull { abs(it.x - x) + abs(it.y - y) }
+                            ?.let { dismissed = dismissed + Offset(it.x, it.y) }
+                    }
+                },
+        ) {
+            visible.forEach { c ->
                 val center = Offset(c.x * size.width, c.y * size.height)
                 val color = if (c.confirmed) Color(0xFFFFAD32) else Slate
                 drawCircle(color, radius = if (c.confirmed) 26f else 16f, center = center, style = Stroke(if (c.confirmed) 4f else 2f))
@@ -277,44 +393,64 @@ private fun CameraPane(mode: LensMode) {
             }
         }
     }
-    val confirmed = candidates.count { it.confirmed }
+    val confirmed = visible.count { it.confirmed }
     Text(
         when {
             failure != null -> tr("The camera could not start.") + " " + failure
             confirmed > 0 -> "$confirmed " + tr("steady bright spot(s). Look at the place with your own eyes: is there a small lens or LED?")
-            candidates.isNotEmpty() -> tr("A flicker. Hold steady on it.")
+            visible.isNotEmpty() -> tr("A flicker. Hold steady on it.")
             else -> tr("Nothing yet. Move slowly. Reflections of lamps in glass can look like this too.")
         },
         style = MaterialTheme.typography.titleSmall,
         color = if (confirmed > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
     )
+    if (mode == LensMode.LENS && camera != null && !hasTorch) {
+        Text(
+            tr("This camera has no torch, so the blink test is off. Results will include lit LEDs and lamps."),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    Text(
+        tr("Tap a marked spot to dismiss it while you hold still."),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    if (dismissed.isNotEmpty()) {
+        FieldwatchActionButton(onClick = { dismissed = emptyList() }, modifier = Modifier.fillMaxWidth()) {
+            Text(tr("Show dismissed spots"))
+        }
+    }
 }
 
-/** Turns one camera frame into glint candidates, mapped to the way the preview is shown. */
-private fun analyze(image: ImageProxy, tracker: GlintTracker, front: Boolean): List<GlintTracker.Candidate> {
-    return try {
-        image.use { img ->
-            val plane = img.planes[0]
-            val buffer = plane.buffer
-            val data = ByteArray(buffer.remaining())
-            buffer.get(data)
-            val pooled = GlintDetector.maxPool(data, img.width, img.height, plane.rowStride, plane.pixelStride, block = 4)
-            val glints = GlintDetector.detect(pooled.data, pooled.width, pooled.height)
-            val rotation = img.imageInfo.rotationDegrees
-            tracker.update(glints).map { c ->
-                var (x, y) = when (rotation) {
-                    90 -> (1f - c.y) to c.x
-                    180 -> (1f - c.x) to (1f - c.y)
-                    270 -> c.y to (1f - c.x)
-                    else -> c.x to c.y
-                }
-                if (front) x = 1f - x
-                GlintTracker.Candidate(x, y, c.hits, c.confirmed)
-            }
-        }
-    } catch (e: Exception) {
-        emptyList()
+private class Frame(val glints: List<Glint>, val rotation: Int)
+
+/** Reads one camera frame into glints (still in sensor orientation) and closes it. */
+private fun readFrame(image: ImageProxy): Frame? = try {
+    image.use { img ->
+        val plane = img.planes[0]
+        val buffer = plane.buffer
+        val data = ByteArray(buffer.remaining())
+        buffer.get(data)
+        val pooled = GlintDetector.maxPool(data, img.width, img.height, plane.rowStride, plane.pixelStride, block = 4)
+        Frame(GlintDetector.detect(pooled.data, pooled.width, pooled.height), img.imageInfo.rotationDegrees)
     }
+} catch (e: Exception) {
+    null
+}
+
+/** Maps a candidate from sensor orientation to the way the preview is shown. */
+private fun toDisplay(c: GlintTracker.Candidate, rotation: Int, front: Boolean): GlintTracker.Candidate {
+    var x: Float
+    val y: Float
+    when (rotation) {
+        90 -> { x = 1f - c.y; y = c.x }
+        180 -> { x = 1f - c.x; y = 1f - c.y }
+        270 -> { x = c.y; y = 1f - c.x }
+        else -> { x = c.x; y = c.y }
+    }
+    if (front) x = 1f - x
+    return GlintTracker.Candidate(x, y, c.hits, c.confirmed)
 }
 
 @Composable

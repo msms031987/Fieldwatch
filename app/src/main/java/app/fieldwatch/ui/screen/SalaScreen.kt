@@ -61,6 +61,7 @@ fun SalaPane(state: FieldwatchUi, vm: FieldwatchViewModel, onOpen: (Sighting) ->
 
     BoxWithConstraints(Modifier.fillMaxSize().padding(8.dp)) {
         val wide = maxWidth >= 720.dp
+        val maxH = maxHeight
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             SalaHeader(counts, onAir.size, state.displayPaused)
             if (wide) {
@@ -76,7 +77,7 @@ fun SalaPane(state: FieldwatchUi, vm: FieldwatchViewModel, onOpen: (Sighting) ->
                     }
                 }
             } else {
-                val radarHeight: Dp = minOf(280.dp, maxHeight * 0.38f)
+                val radarHeight: Dp = minOf(280.dp, maxH * 0.38f)
                 HudPanel(tr("RADAR"), Modifier.fillMaxWidth().height(radarHeight)) {
                     LivePane(state, vm, onOpen, forceMode = ViewMode.RADAR, banners = false)
                 }

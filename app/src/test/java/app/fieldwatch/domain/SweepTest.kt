@@ -82,14 +82,23 @@ class SweepTest {
     }
 
     @Test
-    fun trackerNeverConfirmsASpotThatKeepsJumping() {
+    fun trackerNeverConfirmsASpotThatMovesFasterThanItsMatchRadius() {
         val t = GlintTracker()
         var out = emptyList<GlintTracker.Candidate>()
         for (i in 0 until 8) {
-            val x = if (i % 2 == 0) 0.2f else 0.8f
-            out = t.update(listOf(Glint(x, 0.5f, 4, 255)))
+            out = t.update(listOf(Glint(0.05f + 0.1f * i, 0.5f, 4, 255)))
         }
         assertTrue(out.none { it.confirmed })
+    }
+
+    @Test
+    fun trackerConfirmsAnLedThatBlinksInTheSamePlace() {
+        val t = GlintTracker()
+        val g = listOf(Glint(0.3f, 0.6f, 4, 255))
+        var out = emptyList<GlintTracker.Candidate>()
+        // On, off, on, off...: the spot returns to the same place, so it counts as steady.
+        for (i in 0 until 8) out = t.update(if (i % 2 == 0) g else emptyList())
+        assertTrue(out.single().confirmed)
     }
 
     @Test

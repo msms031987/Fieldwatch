@@ -128,6 +128,7 @@ import app.fieldwatch.domain.FieldwatchDisclaimer
 import app.fieldwatch.domain.disclaimerOk
 import app.fieldwatch.radio.RadioPermissions
 import app.fieldwatch.ui.screen.DeviceDetailScreen
+import app.fieldwatch.ui.screen.DirectionScreen
 import app.fieldwatch.ui.screen.HuntScreen
 import app.fieldwatch.ui.screen.FiltersScreen
 import app.fieldwatch.ui.screen.FleetsScreen
@@ -151,6 +152,7 @@ fun FieldwatchRoot(vm: FieldwatchViewModel, onRequestPermissions: () -> Unit) {
             LocalLanguage provides state.settings.language,
             LocalPlainLanguage provides state.settings.plainLanguage,
         ) {
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
             when {
                 !state.settings.onboardingDone ->
                     OnboardingScreen(state.settings.language, vm::setLanguage, vm::finishOnboarding)
@@ -159,6 +161,7 @@ fun FieldwatchRoot(vm: FieldwatchViewModel, onRequestPermissions: () -> Unit) {
                 !state.permissionsOk ->
                     PermissionScreen(state.settings.language, vm::setLanguage, onRequestPermissions)
                 else -> FieldwatchShell(state, vm)
+            }
             }
         }
     }
@@ -282,7 +285,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
             vm.setScanControlsExpanded(false)
         }
     }
-    val keepAwake = state.settings.keepScreenOn || route == "hunt"
+    val keepAwake = state.settings.keepScreenOn || route == "hunt" || route == "direction"
     DisposableEffect(keepAwake) {
         val window = (view.context as? android.app.Activity)?.window
         if (keepAwake) {
@@ -297,7 +300,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
     Box(Modifier.fillMaxSize()) {
     Scaffold(
         topBar = {
-            if (route != "detail" && route != "hunt") {
+            if (route != "detail" && route != "hunt" && route != "direction") {
                 Column {
                 TopAppBar(
                     expandedHeight = 52.dp,
@@ -406,7 +409,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
             }
         },
         bottomBar = {
-            if (route != "detail" && route != "hunt") {
+            if (route != "detail" && route != "hunt" && route != "direction") {
                 Column {
                     if (route == "live" && (state.filter.arrivalsOnly || state.filter.movingWithYou)) {
                         LiveSessionBar(
@@ -674,9 +677,22 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                             vm.startHunt(device)
                             nav.navigate("hunt")
                         },
+                        onDirection = {
+                            vm.startHunt(device)
+                            nav.navigate("direction")
+                        },
                         demoMode = state.settings.demoMode,
                     )
                 }
+            }
+            composable("direction") {
+                DirectionScreen(
+                    vm = vm,
+                    onBack = {
+                        vm.stopHunt()
+                        nav.popBackStack()
+                    },
+                )
             }
             composable("hunt") {
                 HuntScreen(

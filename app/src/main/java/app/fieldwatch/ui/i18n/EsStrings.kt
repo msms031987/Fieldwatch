@@ -156,6 +156,27 @@ object EsStrings {
             "Una señal más fuerte suele significar que está más cerca, pero las paredes, los cuerpos y el propio aparato la alteran. Caminá hacia una señal y mirá si sube para confirmarlo.",
         "Roughly" to "Aproximadamente",
 
+        // Direction
+        "Direction" to "Dirección",
+        "Find direction" to "Buscar dirección",
+        "Hold the phone upright and turn slowly in place, one full circle, taking about 20 seconds. Then turn a second time to confirm." to
+            "Sostené el teléfono vertical y girá despacio en el lugar, una vuelta completa de unos 20 segundos. Después dá una segunda vuelta para confirmar.",
+        "This phone has no compass sensor." to "Este teléfono no tiene sensor de brújula.",
+        "Compass needs calibrating: wave the phone in a figure 8." to "La brújula necesita calibrarse: movelo en forma de 8.",
+        "Circle covered" to "Círculo cubierto",
+        "readings" to "lecturas",
+        "Keep turning until the circle is covered." to "Seguí girando hasta cubrir el círculo.",
+        "The signal is about the same in every direction. Likely very close, or reflections. Move and try again." to
+            "La señal es casi igual en todas las direcciones. Probablemente esté muy cerca, o haya reflejos. Movete y probá de nuevo.",
+        "Clear direction" to "Dirección clara",
+        "Probable direction" to "Dirección probable",
+        "Weak hint" to "Pista débil",
+        "you are facing it" to "estás de frente",
+        "turn right" to "girá a la derecha",
+        "turn left" to "girá a la izquierda",
+        "A hint, not a bearing. Your body blocks the signal from behind, so the strongest way is usually toward the radio, but walls and reflections can fool it. Walk that way and check that the signal rises." to
+            "Es una pista, no un rumbo exacto. Tu cuerpo tapa la señal que viene de atrás, así que la dirección más fuerte suele apuntar al radio, pero paredes y reflejos pueden engañar. Caminá hacia ahí y comprobá que la señal suba.",
+        "Start over" to "Empezar de nuevo",
         // Sweep
         "Sweep" to "Barrido",
         "Lenses and LEDs" to "Lentes y LEDs",

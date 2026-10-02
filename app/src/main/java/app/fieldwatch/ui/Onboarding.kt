@@ -29,7 +29,7 @@ import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.SignalCellularAlt
-import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.Hearing
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -163,7 +163,7 @@ private data class OnboardingSlide(
 
 private val slides = listOf(
     OnboardingSlide(
-        Icons.Outlined.Visibility,
+        Icons.Outlined.Hearing,
         "Hear what your phone hears",
         "hears",
         "BISSA OpSec only listens. It lists the Wi-Fi access points and Bluetooth LE advertisers around you. No account, no server, nothing is transmitted.",
@@ -260,6 +260,7 @@ fun OnboardingScreen(language: String, onLanguage: (String) -> Unit, onDone: () 
                 },
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(12.dp))

@@ -21,6 +21,7 @@ import app.fieldwatch.ui.component.DecodeGlyph
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.GroupAdd
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.WarningAmber
@@ -94,6 +95,7 @@ fun DeviceDetailScreen(
     onBack: () -> Unit,
     onCreateFleet: () -> Unit,
     onHunt: () -> Unit,
+    onDirection: () -> Unit,
     demoMode: Boolean = false,
 ) {
     val fmt = SimpleDateFormat("HH:mm:ss", Locale.US)
@@ -598,6 +600,14 @@ fun DeviceDetailScreen(
                     Icon(Icons.Outlined.NearMe, null)
                     Spacer(Modifier.padding(4.dp))
                     Text("Hunt")
+                }
+                FieldwatchActionButton(
+                    onClick = onDirection,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(Icons.Outlined.Explore, null)
+                    Spacer(Modifier.padding(4.dp))
+                    Text(tr("Find direction"))
                 }
             } else {
                 Text(

@@ -96,12 +96,12 @@ fun HuntScreen(
         ?: MaterialTheme.colorScheme.primary)
         .nightIf(night)
     val cueColor = when (hunt.cue) {
-        HuntCue.VERY_CLOSE -> Color(0xFF8EE08A).nightIf(night)
-        HuntCue.CLOSER -> Color(0xFF68C564).nightIf(night)
-        HuntCue.FURTHER -> Color(0xFFE53E3E).nightIf(night)
+        HuntCue.VERY_CLOSE -> Color(0xFFFFD28A).nightIf(night)
+        HuntCue.CLOSER -> Color(0xFFFFAD32).nightIf(night)
+        HuntCue.FURTHER -> Color(0xFF4497C5).nightIf(night)
         HuntCue.SAME -> MaterialTheme.colorScheme.onSurface
         HuntCue.WAITING -> MaterialTheme.colorScheme.onSurfaceVariant
-        HuntCue.QUIET -> Color(0xFFFFAD32).nightIf(night)
+        HuntCue.QUIET -> Color(0xFF9AA9B8).nightIf(night)
         HuntCue.GONE -> Color(0xFFE53E3E).nightIf(night)
     }
     val now = System.currentTimeMillis()

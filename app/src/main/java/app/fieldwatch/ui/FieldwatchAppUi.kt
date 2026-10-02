@@ -67,7 +67,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.NavigationBarDefaults
 import app.fieldwatch.ui.component.FieldwatchActionButton
 import app.fieldwatch.ui.component.FieldwatchDropdownField
 import androidx.compose.material3.OutlinedTextField
@@ -75,7 +74,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import app.fieldwatch.ui.component.FieldwatchSwitch
 import androidx.compose.material3.Text
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import app.fieldwatch.ui.component.bissaOpsecWordmark
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -86,6 +88,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -373,8 +376,14 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
     Scaffold(
         topBar = {
             if (route != "detail" && route != "hunt") {
+                Column {
                 TopAppBar(
                     expandedHeight = 52.dp,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
                     title = {
                         val screenW = LocalConfiguration.current.screenWidthDp.dp
                         val actionW = if (route == "live") 56.dp else 16.dp
@@ -394,16 +403,20 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                                 },
                         ) {
                             Text(
-                                when {
-                                    state.sit.open != null && state.displayPaused ->
-                                        "FIELDWATCH  ·  SIT  ·  PAUSED"
-                                    state.sit.open != null -> "FIELDWATCH  ·  SIT"
-                                    state.displayPaused -> "FIELDWATCH  ·  PAUSED"
-                                    else -> "FIELDWATCH"
-                                },
+                                bissaOpsecWordmark(
+                                    accent = MaterialTheme.colorScheme.primary,
+                                    base = MaterialTheme.colorScheme.onSurface,
+                                    muted = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    suffix = when {
+                                        state.sit.open != null && state.displayPaused -> "  ·  SIT  ·  PAUSED"
+                                        state.sit.open != null -> "  ·  SIT"
+                                        state.displayPaused -> "  ·  PAUSED"
+                                        else -> ""
+                                    },
+                                ),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = 2.sp,
+                                letterSpacing = 3.sp,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
@@ -457,6 +470,8 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                         }
                     },
                 )
+                HorizontalDivider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f))
+                }
             }
         },
         bottomBar = {
@@ -471,9 +486,9 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                             onStartOverFollow = vm::resetFollowSession,
                         )
                     }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f))
                     Surface(
-                        color = NavigationBarDefaults.containerColor,
-                        tonalElevation = NavigationBarDefaults.Elevation,
+                        color = MaterialTheme.colorScheme.surface,
                         modifier = Modifier
                             .fillMaxWidth()
                             .windowInsetsPadding(WindowInsets.navigationBars),
@@ -769,10 +784,16 @@ private fun RowScope.FieldwatchNavTab(
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
+    val indicator = MaterialTheme.colorScheme.primary
     Column(
         Modifier
             .weight(weight)
             .clickable(onClick = onClick)
+            .drawBehind {
+                if (selected) {
+                    drawRect(indicator, size = androidx.compose.ui.geometry.Size(size.width, 2.dp.toPx()))
+                }
+            }
             .padding(horizontal = 2.dp, vertical = 1.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -787,8 +808,9 @@ private fun RowScope.FieldwatchNavTab(
                 }
             }
             Text(
-                label,
-                style = MaterialTheme.typography.labelSmall,
+                label.uppercase(),
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = 0.8.sp),
+                fontWeight = FontWeight.SemiBold,
                 color = color,
                 maxLines = 1,
                 softWrap = false,

@@ -971,15 +971,15 @@ object TextMatch {
 
 object Palette {
     val fleet = listOf(
-        0xFF3DFF9A.toInt(),
-        0xFFFFB020.toInt(),
-        0xFFFF3D5A.toInt(),
-        0xFF4FC3F7.toInt(),
-        0xFFB388FF.toInt(),
-        0xFFFF8A4C.toInt(),
-        0xFFE8EEF2.toInt(),
-        0xFF3D8B6E.toInt(),
-        0xFF5BA3D9.toInt(),
+        0xFFFFAD32.toInt(), // BISSA gold
+        0xFF4497C5.toInt(), // BISSA blue
+        0xFFE6ECF2.toInt(), // off-white
+        0xFFFFD28A.toInt(), // light gold
+        0xFF8CC4E4.toInt(), // light blue
+        0xFFB87A1E.toInt(), // deep gold
+        0xFF2F7AA6.toInt(), // deep blue
+        0xFF9AA9B8.toInt(), // slate
+        0xFFFFE9C2.toInt(), // pale gold
     )
 
     fun color(index: Int): Int = fleet[index.mod(fleet.size)]

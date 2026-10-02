@@ -309,11 +309,11 @@ fun SitPathCanvas(
     }
 }
 
-internal val AircraftAmber = Color(0xFFC47A00)
+internal val AircraftAmber = Color(0xFFB87A1E)
 
 private val ClusterFill = Color(0xFF1A2330)
 private val ClusterInk = Color(0xFFF4F7FB)
-private val UnmatchedDisc = Color(0xFF8D6E63)
+private val UnmatchedDisc = Color(0xFF9AA9B8)
 
 @Composable
 private fun classGlyphPainters(): Map<SignatureClass?, Painter> {

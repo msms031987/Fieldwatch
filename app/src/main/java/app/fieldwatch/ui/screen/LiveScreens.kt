@@ -59,6 +59,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.isActive
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -1124,14 +1125,20 @@ fun DeviceRow(
         label = "alertFlash",
     )
     Surface(
-        shape = RoundedCornerShape(if (roomy) 12.dp else 8.dp),
+        shape = RoundedCornerShape(3.dp),
         color = rowColor,
-        tonalElevation = 1.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)),
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onOpen(device) },
     ) {
-        Column(Modifier.padding(horizontal = 12.dp, vertical = if (roomy) 6.dp else 4.dp)) {
+        Column(
+            Modifier
+                .drawBehind {
+                    drawRect(accent, size = androidx.compose.ui.geometry.Size(2.dp.toPx(), size.height))
+                }
+                .padding(start = 14.dp, end = 12.dp, top = if (roomy) 6.dp else 4.dp, bottom = if (roomy) 6.dp else 4.dp),
+        ) {
             Row(verticalAlignment = Alignment.Top) {
                 RadioClassBadge(
                     classKind = device.fleetIds.firstOrNull()?.let { vm.fleetKind(it) },

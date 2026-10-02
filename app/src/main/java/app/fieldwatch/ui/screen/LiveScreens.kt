@@ -742,7 +742,7 @@ private fun RadarView(
 ) {
     val sweep = rememberRadarSweepDegrees()
     val night = LocalNightMode.current
-    val ring = MaterialTheme.colorScheme.outline
+    val ring = BissaBlue.nightIf(night)
     val beam = MaterialTheme.colorScheme.primary
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
     val youColor = MaterialTheme.colorScheme.primary

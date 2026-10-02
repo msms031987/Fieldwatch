@@ -877,9 +877,9 @@ private fun ViewPicker(
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 4.dp)
             .heightIn(max = panelMax),
-        shape = RoundedCornerShape(4.dp),
+        shape = RoundedCornerShape(3.dp),
         color = surfaceColor,
-        tonalElevation = 3.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
         shadowElevation = 8.dp,
     ) {
         Box {
@@ -891,9 +891,11 @@ private fun ViewPicker(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                "Display",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                "DISPLAY",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 2.sp,
+                color = MaterialTheme.colorScheme.primary,
             )
             val dropdownPad = Modifier.fillMaxWidth().padding(vertical = 6.dp)
             ExposedDropdownMenuBox(openView, { openView = it }, dropdownPad) {

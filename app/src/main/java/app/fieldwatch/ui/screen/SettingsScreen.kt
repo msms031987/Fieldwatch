@@ -608,7 +608,7 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("Show Live tour") }
             Text(
-                "Chrome overlay on Live: Tune is Display (Radar, list, By class), Pause, Filters, Signatures, Reports, Settings. First-run after the license; this button shows it again.",
+                "Chrome overlay on Live: the List, Radar, Classes and Timeline tabs switch views, Tune holds display options, Pause, Filters, Signatures, Reports, Settings. First-run after the license; this button shows it again.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

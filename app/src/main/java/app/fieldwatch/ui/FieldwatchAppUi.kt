@@ -46,6 +46,7 @@ import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.Sensors
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Bluetooth
 import androidx.compose.material.icons.outlined.Hub
@@ -136,6 +137,7 @@ import app.fieldwatch.ui.screen.CandidatesScreen
 import app.fieldwatch.ui.screen.RadioBookmarksScreen
 import app.fieldwatch.ui.screen.ReportsScreen
 import app.fieldwatch.ui.screen.SettingsScreen
+import app.fieldwatch.ui.screen.SweepScreen
 import app.fieldwatch.ui.theme.FieldwatchTheme
 
 @Composable
@@ -306,7 +308,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                     ),
                     title = {
                         val screenW = LocalConfiguration.current.screenWidthDp.dp
-                        val actionW = (if (route == "live") 56.dp else 16.dp) + 56.dp
+                        val actionW = (if (route == "live") 104.dp else 16.dp) + 56.dp
                         Column(
                             modifier = Modifier
                                 .widthIn(max = (screenW - 20.dp - actionW).coerceAtLeast(120.dp))
@@ -372,6 +374,9 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                             Modifier.padding(end = 4.dp),
                         )
                         if (route == "live") {
+                            IconButton(onClick = { nav.navigate("sweep") { launchSingleTop = true } }) {
+                                Icon(Icons.Outlined.Sensors, tr("Sweep"))
+                            }
                             IconButton(
                                 onClick = {
                                     vm.setScanControlsExpanded(!state.settings.scanControlsExpanded)
@@ -593,6 +598,14 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                     onOpenPathRadio = { key ->
                         if (vm.openPathRadio(key)) nav.navigate("detail")
                     },
+                )
+            }
+            composable("sweep") {
+                SweepScreen(
+                    state = state,
+                    vm = vm,
+                    onBack = { nav.popBackStack() },
+                    onOpenLive = { nav.navigate("live") { launchSingleTop = true } },
                 )
             }
             composable("candidates") {

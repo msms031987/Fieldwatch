@@ -156,6 +156,61 @@ object EsStrings {
             "Una señal más fuerte suele significar que está más cerca, pero las paredes, los cuerpos y el propio aparato la alteran. Caminá hacia una señal y mirá si sube para confirmarlo.",
         "Roughly" to "Aproximadamente",
 
+        // Sweep
+        "Sweep" to "Barrido",
+        "Lenses and LEDs" to "Lentes y LEDs",
+        "Magnetic field" to "Campo magnético",
+        "Checklist" to "Lista de pasos",
+        "Prototype. These tools help you decide where to look. They cannot prove a room is clean, and a camera that records to a card and never connects to anything can pass every one of them. Nothing from the camera or sensors is saved or sent." to
+            "Prototipo. Estas herramientas ayudan a decidir dónde mirar. No pueden probar que un cuarto está limpio, y una cámara que graba en una tarjeta y nunca se conecta a nada puede pasarlas todas. Nada de la cámara ni de los sensores se guarda ni se envía.",
+        "No camera-like radios heard right now." to "No se escuchan radios parecidos a cámaras ahora.",
+        "camera-like radios heard right now." to "radios parecidos a cámaras escuchados ahora.",
+        "These are Wi-Fi and Bluetooth signatures of known camera makers. Cameras that never join a network do not appear here." to
+            "Son firmas de Wi-Fi y Bluetooth de fabricantes de cámaras conocidos. Las cámaras que nunca se conectan a una red no aparecen acá.",
+        "Open Live" to "Abrir En vivo",
+        "Lens finder" to "Buscador de lentes",
+        "IR check" to "Revisión IR",
+        "Lens finder: the torch lights the room and a camera lens sends a small bright glint straight back. Sweep slowly across walls, shelves, outlets, clocks and smoke detectors." to
+            "Buscador de lentes: la linterna ilumina el cuarto y la lente de una cámara devuelve un pequeño destello brillante. Recorré despacio paredes, estantes, enchufes, relojes y detectores de humo.",
+        "IR check: in a dark room, some front cameras show infrared LEDs as a faint bright dot. Many phones filter infrared out, so seeing nothing means little." to
+            "Revisión IR: en un cuarto oscuro, algunas cámaras frontales muestran los LEDs infrarrojos como un punto brillante tenue. Muchos teléfonos filtran el infrarrojo, así que no ver nada significa poco.",
+        "Allow camera" to "Permitir la cámara",
+        "Start" to "Iniciar",
+        "Stop" to "Detener",
+        "The camera could not start." to "No se pudo iniciar la cámara.",
+        "steady bright spot(s). Look at the place with your own eyes: is there a small lens or LED?" to
+            "punto(s) brillante(s) estable(s). Mirá el lugar con tus propios ojos: ¿hay una lente o un LED pequeño?",
+        "A flicker. Hold steady on it." to "Un parpadeo. Mantené firme el teléfono ahí.",
+        "Nothing yet. Move slowly. Reflections of lamps in glass can look like this too." to
+            "Nada por ahora. Movete despacio. Los reflejos de lámparas en un vidrio también pueden verse así.",
+        "This phone has no magnetic field sensor." to "Este teléfono no tiene sensor de campo magnético.",
+        "Measures magnets, metal and electric currents near the phone. It does not detect radio waves, so it cannot find a transmitter. Set a baseline in a clear spot, then move slowly along furniture and walls and watch for a change." to
+            "Mide imanes, metal y corrientes eléctricas cerca del teléfono. No detecta ondas de radio, así que no puede encontrar un transmisor. Fijá una referencia en un lugar despejado, después recorré despacio muebles y paredes y mirá si hay un cambio.",
+        "No baseline yet. Tap Set baseline in a clear spot." to "Todavía no hay referencia. Tocá Fijar referencia en un lugar despejado.",
+        "Normal: close to the baseline." to "Normal: cerca de la referencia.",
+        "Changed: something magnetic or metal is near." to "Cambió: hay algo magnético o metálico cerca.",
+        "Strong change: a magnet, speaker, motor or large piece of metal is very close." to
+            "Cambio fuerte: un imán, un parlante, un motor o una pieza grande de metal está muy cerca.",
+        "The reading is moving a lot: metal being moved, a motor or AC wiring nearby." to
+            "La lectura se mueve mucho: metal en movimiento, un motor o cableado de corriente alterna cerca.",
+        "Set baseline" to "Fijar referencia",
+        "Smoke detectors, clocks, USB chargers and plugs: look for a tiny lens or LED." to
+            "Detectores de humo, relojes, cargadores USB y enchufes: buscá una lente o un LED diminuto.",
+        "Vents, shelves, plants and decorations that face the bed or the desk." to
+            "Rejillas, estantes, plantas y adornos que miran hacia la cama o el escritorio.",
+        "TV, set-top box and speakers: look for small holes or lenses." to
+            "TV, decodificador y parlantes: buscá agujeros pequeños o lentes.",
+        "Mirrors: touch the glass with a fingertip. If your finger touches its own reflection with no gap, it may be a two-way mirror." to
+            "Espejos: tocá el vidrio con la punta de un dedo. Si el dedo toca su reflejo sin dejar espacio, puede ser un espejo de doble cara.",
+        "Lights out: run the Lens finder, then the IR check, slowly around the room." to
+            "Con las luces apagadas: usá el Buscador de lentes y después la Revisión IR, despacio por todo el cuarto.",
+        "Radios: open Live and look for red or camera-like radios." to
+            "Radios: abrí En vivo y buscá radios en rojo o parecidos a cámaras.",
+        "Magnetic field: set a baseline, then sweep furniture and walls." to
+            "Campo magnético: fijá una referencia y después recorré muebles y paredes.",
+        "Anything plugged in with no clear purpose, or that is new since you last looked." to
+            "Todo lo que esté enchufado sin un propósito claro, o que sea nuevo desde la última vez que miraste.",
+
         // Sala mode
         "SALA" to "SALA",
         "RADAR" to "RADAR",

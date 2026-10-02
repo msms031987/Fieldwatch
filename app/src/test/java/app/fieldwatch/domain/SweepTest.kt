@@ -33,12 +33,14 @@ class SweepTest {
     }
 
     @Test
-    fun spotInsideALitAreaIsNotAGlint() {
+    fun spotAmongOtherBrightSpecksIsNotAGlint() {
         val w = 160; val h = 120
         val f = frame(w, h)
-        // A ring of bright pixels around the spot makes it part of a lit area.
-        paint(f, w, 70, 50, 12, 235)
-        paint(f, w, 75, 55, 2, 255)
+        paint(f, w, 80, 60, 2)
+        // Scattered single bright pixels around it, each separated from the spot by a dark gap.
+        listOf(83 to 60, 80 to 63, 77 to 60, 80 to 57, 83 to 62, 77 to 62).forEach { (x, y) ->
+            f[y * w + x] = 255.toByte()
+        }
         assertTrue(GlintDetector.detect(f, w, h).isEmpty())
     }
 

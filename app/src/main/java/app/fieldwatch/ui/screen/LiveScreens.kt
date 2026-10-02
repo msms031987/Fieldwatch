@@ -117,6 +117,10 @@ fun LivePane(
     state: FieldwatchUi,
     vm: FieldwatchViewModel,
     onOpen: (Sighting) -> Unit,
+    /** Show this view instead of the saved one. Sala mode uses it to place several views at once. */
+    forceMode: ViewMode? = null,
+    /** Status lines above the view: paused, filters, open sit. Sala shows them once, not per panel. */
+    banners: Boolean = true,
 ) {
     val live = state.filtered
     val sort = state.settings.strengthSort
@@ -134,7 +138,7 @@ fun LivePane(
     var renameSit by remember { mutableStateOf(false) }
     var renameDraft by remember { mutableStateOf("") }
     Column(Modifier.fillMaxSize()) {
-        if (state.displayPaused) {
+        if (banners && state.displayPaused) {
             Text(
                 "Display paused · radios still scanning and logging. Filters still apply when you run again. Tap Live to run the list again.",
                 style = MaterialTheme.typography.labelSmall,
@@ -142,7 +146,7 @@ fun LivePane(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
             )
         }
-        if (state.filter.arrivalsOnly) {
+        if (banners && state.filter.arrivalsOnly) {
             Text(
                 when {
                     state.arrivalsLearning -> "New only · learning sitting Wi-Fi"
@@ -154,7 +158,7 @@ fun LivePane(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
             )
         }
-        if (state.filter.movingWithYou) {
+        if (banners && state.filter.movingWithYou) {
             Text(
                 "Follow · path ${state.operatorSpanM.toInt()} m · Start over clears the path",
                 style = MaterialTheme.typography.labelSmall,
@@ -162,7 +166,7 @@ fun LivePane(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
             )
         }
-        if (state.filter.watchedOnly) {
+        if (banners && state.filter.watchedOnly) {
             Text(
                 "Watched only",
                 style = MaterialTheme.typography.labelSmall,
@@ -170,7 +174,7 @@ fun LivePane(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
             )
         }
-        if (state.filter.customNamesOnly) {
+        if (banners && state.filter.customNamesOnly) {
             Text(
                 "Named radios only",
                 style = MaterialTheme.typography.labelSmall,
@@ -179,7 +183,7 @@ fun LivePane(
             )
         }
         val openSit = state.sit.open
-        if (openSit != null) {
+        if (banners && openSit != null) {
             val now = System.currentTimeMillis()
             val dur = Sit.fmtDuration(openSit.durationMs(now))
             val cap = when {
@@ -233,7 +237,7 @@ fun LivePane(
             )
         }
         Box(Modifier.weight(1f).fillMaxWidth()) {
-            when (state.settings.viewMode) {
+            when (forceMode ?: state.settings.viewMode) {
                 ViewMode.RADAR -> RadarView(live, vm, sort, windowMs, onOpen, emptyHint = arrivalsEmpty(state), showFleet = showFleet, demoMode = demoMode, flashKeys = flashKeys, alertedKeys = alertedKeys)
                 ViewMode.LIST -> RankedList(live, vm, onOpen, sparklines = false, sort = sort, windowMs = windowMs, showBar = showBar, layoutEpoch = state.settings.scanControlsExpanded, emptyHint = arrivalsEmpty(state), showNewAge = state.filter.arrivalsOnly, showFleet = showFleet, showFrequency = showFrequency, showSeenTimes = showSeenTimes, flashKeys = flashKeys, alertedKeys = alertedKeys, pinEnd = pinEnd, titleLine = titleLine, subtitleLine = subtitleLine, demoMode = demoMode)
                 ViewMode.TIMELINE -> TimelineView(live, vm, onOpen, showFleet = showFleet, showFrequency = showFrequency, showSeenTimes = showSeenTimes, flashKeys = flashKeys, alertedKeys = alertedKeys, titleLine = titleLine, subtitleLine = subtitleLine, demoMode = demoMode)

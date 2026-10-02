@@ -118,5 +118,15 @@ object EsStrings {
         "Dense situation-room layout on Live: role counters, radar, list and attention feed together. Best on a tablet or in landscape." to
             "Diseño denso de sala de situación en En vivo: contadores por rol, radar, lista y alertas juntos. Ideal en tablet o en horizontal.",
         "Show intro again" to "Ver la intro otra vez",
+
+        // Sala mode
+        "SALA" to "SALA",
+        "RADAR" to "RADAR",
+        "RADIOS" to "RADIOS",
+        "ATTENTION" to "ATENCIÓN",
+        "on air" to "al aire",
+        "Infra" to "Infra",
+        "Unknown" to "Desconocido",
+        "Nothing needs attention." to "Nada requiere atención.",
     )
 }

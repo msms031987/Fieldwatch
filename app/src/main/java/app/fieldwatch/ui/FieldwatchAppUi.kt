@@ -127,6 +127,7 @@ import app.fieldwatch.ui.screen.HuntScreen
 import app.fieldwatch.ui.screen.FiltersScreen
 import app.fieldwatch.ui.screen.FleetsScreen
 import app.fieldwatch.ui.screen.LivePane
+import app.fieldwatch.ui.screen.SalaPane
 import app.fieldwatch.ui.screen.CandidatesScreen
 import app.fieldwatch.ui.screen.RadioBookmarksScreen
 import app.fieldwatch.ui.screen.ReportsScreen
@@ -490,17 +491,18 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
         ) {
             composable("live") {
                 BoxWithConstraints(Modifier.fillMaxSize()) {
-                    Column(Modifier.fillMaxSize()) {
-                        LiveViewTabs(mode = state.settings.viewMode, onChange = vm::setViewMode)
-                        Box(Modifier.weight(1f)) {
-                            LivePane(
-                                state = state,
-                                vm = vm,
-                                onOpen = {
-                                    vm.select(it)
-                                    nav.navigate("detail")
-                                },
-                            )
+                    val openDetail = { device: Sighting ->
+                        vm.select(device)
+                        nav.navigate("detail")
+                    }
+                    if (state.settings.salaMode) {
+                        SalaPane(state, vm, openDetail)
+                    } else {
+                        Column(Modifier.fillMaxSize()) {
+                            LiveViewTabs(mode = state.settings.viewMode, onChange = vm::setViewMode)
+                            Box(Modifier.weight(1f)) {
+                                LivePane(state = state, vm = vm, onOpen = openDetail)
+                            }
                         }
                     }
                     AnimatedVisibility(

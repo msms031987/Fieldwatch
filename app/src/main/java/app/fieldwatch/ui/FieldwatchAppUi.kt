@@ -77,6 +77,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import app.fieldwatch.ui.component.LiveViewTabs
+import app.fieldwatch.ui.component.ScanPulse
 import app.fieldwatch.ui.component.bissaOpsecWordmark
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -426,6 +428,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                             ) {
                                 val muted = MaterialTheme.colorScheme.onSurfaceVariant
+                                ScanPulse(scanning = state.scanning, paused = state.displayPaused)
                                 HeaderCount(state.wifiNow, Icons.Outlined.Wifi, "Wi-Fi")
                                 HeaderCount(state.bleNow, Icons.Outlined.Bluetooth, "BLE")
                                 HeaderCount(state.namedNow, Icons.Outlined.Hub, "signatures")
@@ -572,14 +575,19 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
         ) {
             composable("live") {
                 BoxWithConstraints(Modifier.fillMaxSize()) {
-                    LivePane(
-                        state = state,
-                        vm = vm,
-                        onOpen = {
-                            vm.select(it)
-                            nav.navigate("detail")
-                        },
-                    )
+                    Column(Modifier.fillMaxSize()) {
+                        LiveViewTabs(mode = state.settings.viewMode, onChange = vm::setViewMode)
+                        Box(Modifier.weight(1f)) {
+                            LivePane(
+                                state = state,
+                                vm = vm,
+                                onOpen = {
+                                    vm.select(it)
+                                    nav.navigate("detail")
+                                },
+                            )
+                        }
+                    }
                     AnimatedVisibility(
                         visible = state.settings.scanControlsExpanded,
                         enter = fadeIn(),

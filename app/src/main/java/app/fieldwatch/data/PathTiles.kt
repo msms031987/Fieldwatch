@@ -162,7 +162,7 @@ object PathTiles {
             instanceFollowRedirects = true
             setRequestProperty(
                 "User-Agent",
-                "Fieldwatch/${app.fieldwatch.BuildConfig.VERSION_NAME} (https://github.com/OffGridPete/Fieldwatch)",
+                "BISSA-OpSec/${app.fieldwatch.BuildConfig.VERSION_NAME} (https://github.com/msms031987/Fieldwatch)",
             )
         }
         return try {

@@ -56,7 +56,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import app.fieldwatch.R
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -131,7 +130,7 @@ fun SettingsScreen(
                 FieldwatchSwitch(settings.keepScreenOn, { on -> vm.updateSettings { it.copy(keepScreenOn = on) } })
             }
             Text(
-                "On by default. Stops the display from sleeping while Fieldwatch is open so BLE is not parked when the phone blanks. Scanning still runs in the notification if you leave the app. Turn it off when you pocket the phone.",
+                "On by default. Stops the display from sleeping while BISSA OpSec is open so BLE is not parked when the phone blanks. Scanning still runs in the notification if you leave the app. Turn it off when you pocket the phone.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -211,18 +210,18 @@ fun SettingsScreen(
             StableCaption(
                 when {
                     Build.VERSION.SDK_INT < 30 ->
-                        "Needs Android 11+ so Fieldwatch can read whether the OS is still throttling scans. This phone cannot confirm that, so the switch stays off."
+                        "Needs Android 11+ so BISSA OpSec can read whether the OS is still throttling scans. This phone cannot confirm that, so the switch stays off."
                     fastActive ->
-                        "On. Fieldwatch asks for a new AP list about every 8 seconds. Uses more battery and heat. If the OS starts refusing scans, it backs off."
+                        "On. BISSA OpSec asks for a new AP list about every 8 seconds. Uses more battery and heat. If the OS starts refusing scans, it backs off."
                     settings.wifiFastScan && osThrottled ->
                         "Saved on, but not in effect — Android Wi-Fi scan throttling is still on. Turn that off in Developer options, then return here."
                     else ->
-                        "Stock Android allows about four AP scans per two minutes. Faster scans only run after you turn off Wi-Fi scan throttling in Developer options. Fieldwatch checks that OS switch before turning this on, and cannot change it for you."
+                        "Stock Android allows about four AP scans per two minutes. Faster scans only run after you turn off Wi-Fi scan throttling in Developer options. BISSA OpSec checks that OS switch before turning this on, and cannot change it for you."
                 },
-                "Needs Android 11+ so Fieldwatch can read whether the OS is still throttling scans. This phone cannot confirm that, so the switch stays off.",
-                "On. Fieldwatch asks for a new AP list about every 8 seconds. Uses more battery and heat. If the OS starts refusing scans, it backs off.",
+                "Needs Android 11+ so BISSA OpSec can read whether the OS is still throttling scans. This phone cannot confirm that, so the switch stays off.",
+                "On. BISSA OpSec asks for a new AP list about every 8 seconds. Uses more battery and heat. If the OS starts refusing scans, it backs off.",
                 "Saved on, but not in effect — Android Wi-Fi scan throttling is still on. Turn that off in Developer options, then return here.",
-                "Stock Android allows about four AP scans per two minutes. Faster scans only run after you turn off Wi-Fi scan throttling in Developer options. Fieldwatch checks that OS switch before turning this on, and cannot change it for you.",
+                "Stock Android allows about four AP scans per two minutes. Faster scans only run after you turn off Wi-Fi scan throttling in Developer options. BISSA OpSec checks that OS switch before turning this on, and cannot change it for you.",
             )
             if (needDevOptions) {
                 AlertDialog(
@@ -231,9 +230,9 @@ fun SettingsScreen(
                     text = {
                         Text(
                             if (Build.VERSION.SDK_INT < 30) {
-                                "This phone is older than Android 11, so Fieldwatch cannot read the OS Wi-Fi scan-throttle switch. Faster AP scanning stays off."
+                                "This phone is older than Android 11, so BISSA OpSec cannot read the OS Wi-Fi scan-throttle switch. Faster AP scanning stays off."
                             } else {
-                                "Android is still throttling Wi-Fi scans (about four per two minutes). Fieldwatch will not turn Faster Wi-Fi AP scans on until that is off.\n\n" +
+                                "Android is still throttling Wi-Fi scans (about four per two minutes). BISSA OpSec will not turn Faster Wi-Fi AP scans on until that is off.\n\n" +
                                     "Enable Developer options (tap Build number seven times in About phone), then Settings → Developer options → Wi-Fi scan throttling → Off. Come back and flip this switch again."
                             },
                         )
@@ -267,8 +266,8 @@ fun SettingsScreen(
                 )
             }
             Text(
-                "Mirrors Android Allow background usage. Tap to open Fieldwatch’s Battery page and " +
-                    "use that switch. Fieldwatch updates when you return. Off: the OS can kill the scan " +
+                "Mirrors Android Allow background usage. Tap to open BISSA OpSec’s Battery page and " +
+                    "use that switch. BISSA OpSec updates when you return. Off: the OS can kill the scan " +
                     "as soon as you leave. Not Keep screen on.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -283,7 +282,7 @@ fun SettingsScreen(
             Text(
                 "Mirrors Android Unrestricted (not Optimized). Some phones (Samsung among them) do not " +
                     "open onto that choice. If you only see Allow background usage, tap that row to " +
-                    "click through and select Unrestricted. Fieldwatch updates when you return.",
+                    "click through and select Unrestricted. BISSA OpSec updates when you return.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -297,13 +296,13 @@ fun SettingsScreen(
                     text = {
                         Text(
                             if (background) {
-                                "The next screen is Fieldwatch’s Battery page. Use the Allow background usage switch. " +
-                                    "Fieldwatch will match that setting when you return."
+                                "The next screen is BISSA OpSec’s Battery page. Use the Allow background usage switch. " +
+                                    "BISSA OpSec will match that setting when you return."
                             } else {
                                 "Some phones (Samsung among them) do not open onto Unrestricted / " +
                                     "Optimized / Restricted. If you only see Allow background usage, " +
                                     "tap that row (the words, not the blue switch) to click through, " +
-                                    "then select Unrestricted. Fieldwatch will match that when you return."
+                                    "then select Unrestricted. BISSA OpSec will match that when you return."
                             },
                         )
                     },
@@ -442,7 +441,7 @@ fun SettingsScreen(
             Text(
                 "On by default. When the phone has internet, Debrief / AI Export reverse-geocode GPS stamps " +
                     "to street/city, and Reports → Path loads OpenStreetMap tiles under the trace. " +
-                    "No Fieldwatch cloud, no API key. Offline or no geocoder: Debrief uses coordinates only and Path stays the current north-up trace — no error dialog. " +
+                    "No BISSA OpSec cloud, no API key. Offline or no geocoder: Debrief uses coordinates only and Path stays the current north-up trace — no error dialog. " +
                     "Turn off to keep streets and map tiles out of reports and Path. " +
                     "Debrief, Sit export, Log export, and Reset / clear log are on the Reports tab.",
                 style = MaterialTheme.typography.bodySmall,
@@ -548,7 +547,7 @@ fun SettingsScreen(
 
             SectionCard("Signatures") {
             Text(
-                "Export the catalog (stock plus any you added or edited) to share with another Fieldwatch or as a backup. Import adds new rows and extra rules; it does not delete anything. Same id or the same match rules are skipped so a pack can be imported twice. Update stock catalog from GitHub replaces stock rows (including Extra attention) from the v2 pack on the repo; bookmarks, Settings, and signatures you added stay. Needs internet. Offline: Import signatures from a file. Restore defaults below still wipes customs.",
+                "Export the catalog (stock plus any you added or edited) to share with another BISSA OpSec or as a backup. Import adds new rows and extra rules; it does not delete anything. Same id or the same match rules are skipped so a pack can be imported twice. Update stock catalog from GitHub replaces stock rows (including Extra attention) from the v2 pack on the repo; bookmarks, Settings, and signatures you added stay. Needs internet. Offline: Import signatures from a file. Restore defaults below still wipes customs.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -615,7 +614,7 @@ fun SettingsScreen(
             )
 
             Text(
-                "Fieldwatch ${app.fieldwatch.BuildConfig.VERSION_NAME}  ·  Catalog ${state.catalogVersion}",
+                "BISSA OpSec ${app.fieldwatch.BuildConfig.VERSION_NAME}  ·  Catalog ${state.catalogVersion}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -677,7 +676,6 @@ fun SettingsScreen(
 
 @Composable
 private fun CreditFooter() {
-    val context = LocalContext.current
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     Column(
         modifier = Modifier
@@ -687,55 +685,11 @@ private fun CreditFooter() {
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            "Copyright (c) 2026 Off Grid Pete LLC. All rights reserved.",
+            "BISSA OpSec is a personal build based on Fieldwatch, Copyright (c) 2026 Off Grid Pete LLC, used under the MIT License.",
             style = MaterialTheme.typography.labelSmall,
             color = muted,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         )
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            SocialChip(
-                icon = R.drawable.ic_instagram,
-                label = "@OffGridPete",
-                tint = muted,
-                onClick = { openUrl(context, "https://instagram.com/OffGridPete") },
-            )
-            SocialChip(
-                icon = R.drawable.ic_x,
-                label = "@OGridPete",
-                tint = muted,
-                onClick = { openUrl(context, "https://x.com/OGridPete") },
-            )
-        }
-    }
-}
-
-@Composable
-private fun SocialChip(
-    icon: Int,
-    label: String,
-    tint: Color,
-    onClick: () -> Unit,
-) {
-    Surface(
-        shape = RoundedCornerShape(99.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f),
-        modifier = Modifier.clickable(onClick = onClick),
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                painter = painterResource(icon),
-                contentDescription = label,
-                tint = tint,
-                modifier = Modifier.size(14.dp),
-            )
-            Spacer(Modifier.width(6.dp))
-            Text(label, style = MaterialTheme.typography.labelMedium, color = tint)
-        }
     }
 }
 
@@ -918,7 +872,7 @@ private fun isBackgroundUsageAllowed(context: Context): Boolean =
 private enum class BatteryAndroidGate { BACKGROUND, UNRESTRICTED }
 
 /**
- * Fieldwatch’s per-app Battery page. Samsung keeps Allow background usage and
+ * BISSA OpSec’s per-app Battery page. Samsung keeps Allow background usage and
  * Unrestricted on this same screen. [highlightBackground] asks Settings to
  * focus the background-usage switch when the OEM supports it.
  */
@@ -942,11 +896,5 @@ private fun openAppBatteryPage(context: Context, highlightBackground: Boolean) {
     for (intent in attempts) {
         if (intent.resolveActivity(context.packageManager) == null) continue
         if (runCatching { context.startActivity(intent) }.isSuccess) return
-    }
-}
-
-private fun openUrl(context: android.content.Context, url: String) {
-    runCatching {
-        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
 }

@@ -446,7 +446,7 @@ fun ReportsScreen(
                 onRadios = vm::setSitExportRadios,
                 onShare = vm::startSitExport,
                 onSave = onSaveSitToStorage,
-                hint = "One row per unique radio in this sit (or last 15 minutes). CSV / JSON lines include matched signatures and Extra attention families. Not the rotating log. GPX / KML include this phone’s path as a track plus hear-points. Fieldwatch does not upload. Privacy mode does not mask this file.",
+                hint = "One row per unique radio in this sit (or last 15 minutes). CSV / JSON lines include matched signatures and Extra attention families. Not the rotating log. GPX / KML include this phone’s path as a track plus hear-points. BISSA OpSec does not upload. Privacy mode does not mask this file.",
             )
             }
 
@@ -541,7 +541,7 @@ fun ReportsScreen(
                 onRadios = vm::setLogExportRadios,
                 onShare = vm::startExport,
                 onSave = onSaveToStorage,
-                hint = "The rotating file is JSON lines. CSV is the same rows as a spreadsheet. GPX — GPS Exchange, KML — Google Earth, and WiGLE CSV — wigle.net are hear-points: where this phone was when it heard each radio, not a radio fix. Tag detections with GPS and logging on. Share uses the Android share sheet — Fieldwatch does not upload.",
+                hint = "The rotating file is JSON lines. CSV is the same rows as a spreadsheet. GPX — GPS Exchange, KML — Google Earth, and WiGLE CSV — wigle.net are hear-points: where this phone was when it heard each radio, not a radio fix. Tag detections with GPS and logging on. Share uses the Android share sheet — BISSA OpSec does not upload.",
             )
             FieldwatchActionButton(
                 onClick = { confirmClear = true },

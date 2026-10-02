@@ -1708,7 +1708,7 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun debriefSubject(doc: DebriefDoc): String =
-        if (doc.heading.startsWith("FIELDWATCH SIT")) doc.heading else "Fieldwatch field debrief — last 15 minutes"
+        if (doc.heading.startsWith("BISSA OPSEC SIT")) doc.heading else "BISSA OpSec field debrief — last 15 minutes"
 
     private suspend fun fieldDebriefDoc(): DebriefDoc {
         publishExport(0.08f, "Gathering sit…")

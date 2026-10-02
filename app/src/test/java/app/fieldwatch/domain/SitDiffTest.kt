@@ -114,7 +114,7 @@ class SitDiffTest {
         assertTrue(text.contains("Privacy"))
         assertTrue(text.contains("AA:BB:CC:**:**:**"))
         assertFalse(text.contains("11:22:33"))
-        assertTrue(text.contains("FIELDWATCH SIT COMPARE"))
+        assertTrue(text.contains("BISSA OPSEC SIT COMPARE"))
     }
 
     @Test
@@ -181,7 +181,7 @@ class SitDiffTest {
         assertTrue(text.contains("Cap note:"))
         assertTrue(text.contains("Takeaway:"))
         assertTrue(text.contains("decoded live value"))
-        assertTrue(text.contains("FIELDWATCH SIT COMPARE"))
+        assertTrue(text.contains("BISSA OPSEC SIT COMPARE"))
         assertFalse(text.contains("Full Wi-Fi inventory"))
     }
 

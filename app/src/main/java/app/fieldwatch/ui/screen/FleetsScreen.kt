@@ -69,7 +69,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.fieldwatch.domain.Fleet
 import app.fieldwatch.domain.MatchRule
-import app.fieldwatch.domain.Palette
+import app.fieldwatch.domain.RadioRoles
+import app.fieldwatch.ui.component.color
 import app.fieldwatch.ui.theme.LocalNightMode
 import app.fieldwatch.ui.theme.nightIf
 import app.fieldwatch.domain.RadioKind
@@ -220,7 +221,7 @@ private fun SignatureClassHeader(
     expanded: Boolean,
     onToggle: () -> Unit,
 ) {
-    val accent = Color(Palette.color(colorIndex)).nightIf(LocalNightMode.current)
+    val accent = RadioRoles.ofClass(kind).color().nightIf(LocalNightMode.current)
     Surface(
         onClick = onToggle,
         shape = RoundedCornerShape(4.dp),
@@ -252,7 +253,8 @@ private fun SignatureClassHeader(
 
 @Composable
 private fun SignatureRow(fleet: Fleet, state: FieldwatchUi, vm: FieldwatchViewModel) {
-    val color = Color(Palette.color(fleet.colorIndex)).nightIf(LocalNightMode.current)
+    val color = RadioRoles.of(fleet.id, fleet.kind, fleet.attentionNote).color()
+        .nightIf(LocalNightMode.current)
     val liveHits = state.devices.count { fleet.id in it.fleetIds && !it.gone }
     Surface(
         onClick = { vm.editFleet(fleet) },
@@ -414,9 +416,8 @@ fun FleetEditor(
             }
 
             SectionCard("Color") {
-            ColorPicker(fleet.colorIndex) { fleet = fleet.copy(colorIndex = it) }
             Text(
-                "Stock colors are by class (red pentest, amber cameras/ALPR, purple phones/tags, cyan wearables, green mesh, orange audio/glasses, teal in-car/vehicle). Change any row.",
+                "Color follows the role: red for attention, gold for presence, soft gold for vehicles, blue for infrastructure, grey for unknown.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -512,52 +513,6 @@ fun FleetEditor(
                 TextButton(onClick = { confirmDelete = false }) { Text("Cancel") }
             },
         )
-    }
-}
-
-@Composable
-private fun ColorPicker(selected: Int, onSelect: (Int) -> Unit) {
-    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Palette.fleet.forEachIndexed { index, argb ->
-                val on = index == selected
-                val fill = Color(argb).nightIf(LocalNightMode.current)
-                Surface(
-                    onClick = { onSelect(index) },
-                    shape = RoundedCornerShape(4.dp),
-                    color = fill,
-                    border = BorderStroke(
-                        width = if (on) 2.dp else 1.dp,
-                        color = if (on) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.outline
-                        },
-                    ),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(36.dp),
-                ) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        if (on) {
-                            Icon(
-                                Icons.Outlined.Check,
-                                contentDescription = "Selected color",
-                                tint = if (fill.luminance() > 0.45f) {
-                                    Color(0xFF12171C)
-                                } else {
-                                    Color.White
-                                },
-                                modifier = Modifier.size(18.dp),
-                            )
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 

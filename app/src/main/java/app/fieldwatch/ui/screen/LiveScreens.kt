@@ -84,7 +84,7 @@ import app.fieldwatch.domain.OutlineSnap
 import app.fieldwatch.domain.ListLine
 import app.fieldwatch.domain.MacUtil
 import app.fieldwatch.domain.ListSort
-import app.fieldwatch.domain.Palette
+import app.fieldwatch.domain.RadioRole
 import app.fieldwatch.domain.RadarPlot
 import app.fieldwatch.domain.RadioKind
 import app.fieldwatch.domain.Sighting
@@ -101,13 +101,16 @@ import app.fieldwatch.ui.component.PresenceTrack
 import app.fieldwatch.ui.component.RssiBar
 import app.fieldwatch.ui.component.Sparkline
 import app.fieldwatch.ui.component.TrendMark
-import app.fieldwatch.ui.component.rssiColor
+import app.fieldwatch.ui.component.color
 import app.fieldwatch.ui.theme.BissaBlue
 import app.fieldwatch.ui.theme.LocalNightMode
 import app.fieldwatch.ui.theme.GoldActive
 import app.fieldwatch.ui.theme.nightIf
 import kotlin.math.cos
 import kotlin.math.sin
+
+/** A radio not heard for this long (or already marked gone) fades to grey. */
+private const val STALE_MS = 30_000L
 
 @Composable
 fun LivePane(
@@ -432,7 +435,7 @@ private fun ClassOutlineView(
                             title = vm.fleetName(sig.fleetId),
                             count = sig.radios.size,
                             subtitle = null,
-                            accent = Color(Palette.color(vm.fleetColor(sig.fleetId)))
+                            accent = vm.fleetRole(sig.fleetId).color()
                                 .nightIf(LocalNightMode.current),
                             expanded = sigKey in openSigs,
                             indent = true,
@@ -579,7 +582,7 @@ private fun outlineRadioRow(
 
 private fun ClassSlice.accent(vm: FieldwatchViewModel): Color {
     val id = signatures.firstOrNull()?.fleetId ?: radios.firstOrNull()?.fleetIds?.firstOrNull()
-    return if (id != null) Color(Palette.color(vm.fleetColor(id))) else rssiColor(-80)
+    return (if (id != null) vm.fleetRole(id) else RadioRole.UNKNOWN).color()
 }
 
 private fun radarRadius(rssi: Int, maxR: Float, zoom: Float = 1f): Float =
@@ -846,9 +849,7 @@ private fun RadarView(
                 val named = device.fleetIds.isNotEmpty()
                 val paint = if (persist) sweepPaint(sweepBehindDegrees(sweep.floatValue, device.mac)) else 1f
                 val alpha = (if (device.gone) 0.45f else 1f) * (0.35f + 0.65f * paint)
-                val color = (device.fleetIds.firstOrNull()
-                    ?.let { Color(Palette.color(vm.fleetColor(it))) }
-                    ?: rssiColor(plotRssi.toInt()))
+                val color = vm.deviceRole(device, alerted = device.key in alertedKeys).color()
                     .nightIf(night)
                     .copy(alpha = alpha)
                 return Triple(pos, color, named)
@@ -1112,9 +1113,8 @@ fun DeviceRow(
 ) {
     val heardRssi = device.heardRssi(sort, windowMs, now).toInt()
     val rankRssi = device.sortRssi(sort, windowMs, now).toInt()
-    val accent = (device.fleetIds.firstOrNull()
-        ?.let { Color(Palette.color(vm.fleetColor(it))) }
-        ?: rssiColor(heardRssi))
+    val stale = device.gone || now - device.lastSeen > STALE_MS
+    val accent = (if (stale) RadioRole.UNKNOWN else vm.deviceRole(device, alerted)).color()
         .nightIf(LocalNightMode.current)
     val named = showFleet && device.fleetIds.isNotEmpty()
     val roomy = showBar || sparklines || showSeenTimes
@@ -1191,7 +1191,7 @@ fun DeviceRow(
                         Text(
                             "${device.rssi}",
                             style = compactLine(16.sp, 18.sp, FontWeight.Bold).copy(fontFamily = FontFamily.Monospace),
-                            color = accent,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                     if (showFrequency) {
@@ -1313,7 +1313,7 @@ private fun FleetNameChips(
             }
         }
         if (showNames) device.fleetIds.take(3).forEach { id ->
-            val color = Color(Palette.color(vm.fleetColor(id)))
+            val color = vm.fleetRole(id).color()
                 .nightIf(LocalNightMode.current)
             val mapped = vm.fleetHasDecode(id)
             Surface(
@@ -1349,7 +1349,7 @@ private fun FleetNameChips(
         }
         device.liveDecode.forEach { chip ->
             val id = device.fleetIds.firstOrNull()
-            val color = (id?.let { Color(Palette.color(vm.fleetColor(it))) }
+            val color = (id?.let { vm.fleetRole(it).color() }
                 ?: MaterialTheme.colorScheme.primary)
                 .nightIf(LocalNightMode.current)
             Surface(
@@ -1426,9 +1426,7 @@ private fun TimelineView(
             )
         }
         items(devices, key = { it.key }) { device ->
-            val color = (device.fleetIds.firstOrNull()
-                ?.let { Color(Palette.color(vm.fleetColor(it))) }
-                ?: rssiColor(device.rssi))
+            val color = vm.deviceRole(device, alerted = device.key in alertedKeys).color()
                 .nightIf(LocalNightMode.current)
             val flash = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
             val rowColor by animateColorAsState(

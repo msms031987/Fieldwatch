@@ -45,6 +45,8 @@ import app.fieldwatch.domain.FamilyVerdict
 import app.fieldwatch.domain.LogRadio
 import app.fieldwatch.domain.RadioBookmarks
 import app.fieldwatch.domain.RadioKind
+import app.fieldwatch.domain.RadioRole
+import app.fieldwatch.domain.RadioRoles
 import app.fieldwatch.domain.RssiSample
 import app.fieldwatch.domain.Sighting
 import app.fieldwatch.domain.SignatureCandidate
@@ -2225,6 +2227,15 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
 
     fun fleetColor(id: String): Int =
         app.config.fleets.firstOrNull { it.id == id }?.colorIndex ?: 0
+
+    fun fleetRole(id: String): RadioRole {
+        val fleet = app.config.fleets.firstOrNull { it.id == id }
+        return RadioRoles.of(id, fleet?.kind, fleet?.attentionNote.orEmpty())
+    }
+
+    /** Role that colors a radio: alert state wins, then its most urgent signature, else unknown. */
+    fun deviceRole(device: Sighting, alerted: Boolean = false): RadioRole =
+        if (alerted) RadioRole.ATTENTION else RadioRoles.strongest(device.fleetIds.map { fleetRole(it) })
 
     fun fleetAttentionNote(id: String): String =
         app.config.fleets.firstOrNull { it.id == id }?.attentionNote.orEmpty()

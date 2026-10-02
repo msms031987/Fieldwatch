@@ -196,7 +196,7 @@ fun RssiTrend.mark(): String = when (this) {
 }
 
 fun RssiTrend.tint(): Color = when (this) {
-    RssiTrend.UP_FAST, RssiTrend.UP -> Color(0xFFFFAD32)
+    RssiTrend.UP_FAST, RssiTrend.UP -> Color(0xFFE6ECF2)
     RssiTrend.DOWN, RssiTrend.DOWN_FAST -> Color(0xFF9AA9B8)
     RssiTrend.FLAT -> Color(0xFF5C6B7A)
     RssiTrend.UNKNOWN -> Color.Transparent

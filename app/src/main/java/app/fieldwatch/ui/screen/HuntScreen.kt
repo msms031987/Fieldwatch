@@ -50,10 +50,9 @@ import app.fieldwatch.domain.DeviceExplain
 import app.fieldwatch.domain.MacUtil
 import app.fieldwatch.domain.Hunt
 import app.fieldwatch.domain.HuntCue
-import app.fieldwatch.domain.Palette
 import app.fieldwatch.ui.FieldwatchViewModel
 import app.fieldwatch.ui.component.Sparkline
-import app.fieldwatch.ui.component.rssiColor
+import app.fieldwatch.ui.component.color
 import app.fieldwatch.ui.theme.LocalNightMode
 import app.fieldwatch.ui.theme.nightIf
 import kotlin.math.min
@@ -90,10 +89,7 @@ fun HuntScreen(
     val device = hunt.device
     val rssi = device?.rssi
     val night = LocalNightMode.current
-    val accent = (device?.fleetIds?.firstOrNull()
-        ?.let { Color(Palette.color(vm.fleetColor(it))) }
-        ?: rssi?.let { rssiColor(it) }
-        ?: MaterialTheme.colorScheme.primary)
+    val accent = (device?.let { vm.deviceRole(it).color() } ?: MaterialTheme.colorScheme.primary)
         .nightIf(night)
     val cueColor = when (hunt.cue) {
         HuntCue.VERY_CLOSE -> Color(0xFFFFD28A).nightIf(night)

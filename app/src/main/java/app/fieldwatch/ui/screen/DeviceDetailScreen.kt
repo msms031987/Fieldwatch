@@ -55,7 +55,6 @@ import app.fieldwatch.domain.FamilyVerdict
 import app.fieldwatch.domain.Geo
 import app.fieldwatch.domain.MacUtil
 import app.fieldwatch.domain.DeviceExplain
-import app.fieldwatch.domain.Palette
 import app.fieldwatch.domain.RadioDb
 import app.fieldwatch.domain.RadioBookmarks
 import app.fieldwatch.domain.RadioKind
@@ -76,7 +75,7 @@ import app.fieldwatch.ui.theme.nightIf
 import app.fieldwatch.ui.component.PresenceTrack
 import app.fieldwatch.ui.component.Sparkline
 import app.fieldwatch.ui.component.StickyHeight
-import app.fieldwatch.ui.component.rssiColor
+import app.fieldwatch.ui.component.color
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -94,9 +93,7 @@ fun DeviceDetailScreen(
     demoMode: Boolean = false,
 ) {
     val fmt = SimpleDateFormat("HH:mm:ss", Locale.US)
-    val accent = (device.fleetIds.firstOrNull()
-        ?.let { Color(Palette.color(vm.fleetColor(it))) }
-        ?: rssiColor(device.rssi))
+    val accent = vm.deviceRole(device).color()
         .nightIf(LocalNightMode.current)
     val facts = device.facts
     val familyHint by vm.familyHint.collectAsStateWithLifecycle()

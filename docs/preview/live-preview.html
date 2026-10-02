@@ -8,7 +8,7 @@
    Single committed look (BISSA dark): tokens set on :root, no light variant by choice. */
 :root{
   --n4:#020D18; --n3:#001220; --n2:#0A1B2C;
-  --gold:#FFAD32; --blue:#4497C5; --slate:#9AA9B8; --red:#E53E3E;
+  --gold:#FFAD32; --gold2:#FFD9A0; --blue:#4497C5; --slate:#9AA9B8; --red:#E53E3E;
   --fg:#E6ECF2; --dim:rgba(255,255,255,.58); --faint:rgba(255,255,255,.32);
   --line:rgba(255,173,50,.18); --line-blue:rgba(68,151,197,.22); --hair:rgba(255,255,255,.07);
   --bench:#03060D;
@@ -72,7 +72,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .tag-c.att{color:#FC8181;border-color:rgba(229,62,62,.4);background:rgba(229,62,62,.07)}
 .tag-c.cls{color:var(--blue);border-color:var(--line-blue);background:rgba(68,151,197,.06)}
 .num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
-.num b{display:block;font-size:15px;font-weight:700;color:var(--acc)}
+.num b{display:block;font-size:15px;font-weight:700;color:var(--fg)}
 .num span{display:block;font-size:9px;color:var(--faint);margin-top:2px}
 .bar{grid-column:1/-1;height:3px;background:rgba(255,255,255,.06);border-radius:1px;margin-top:4px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--acc)}
@@ -122,7 +122,7 @@ canvas{width:100%;max-width:330px;aspect-ratio:1;display:block}
       <div class="hdr-sec"><i class="dot on" id="dot"></i><span id="state">Scanning · Wi-Fi + BLE</span></div>
     </div>
     <div class="hdr-btns">
-      <button class="hbtn" aria-label="Radios in range"><svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 0 1 14 0M8 12a4 4 0 0 1 8 0"/><circle cx="12" cy="12" r="1"/></svg><span id="count">9</span></button>
+      <button class="hbtn" aria-label="Radios in range"><svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 0 1 14 0M8 12a4 4 0 0 1 8 0"/><circle cx="12" cy="12" r="1"/></svg><span id="count">11</span></button>
       <button class="hbtn" id="tune" aria-pressed="false" aria-label="Show scan options"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
     </div>
   </header>
@@ -141,9 +141,11 @@ canvas{width:100%;max-width:330px;aspect-ratio:1;display:block}
   </div>
 
   <div class="summary">
-    <div class="chip alert"><i style="background:var(--red)"></i>2 need attention</div>
-    <div class="chip"><i style="background:var(--gold)"></i>1 watchlist</div>
-    <div class="chip"><i style="background:var(--blue)"></i>9 in range</div>
+    <div class="chip alert"><i style="background:var(--red)"></i>3 attention</div>
+    <div class="chip"><i style="background:var(--gold)"></i>Presence</div>
+    <div class="chip"><i style="background:var(--gold2)"></i>Vehicle</div>
+    <div class="chip"><i style="background:var(--blue)"></i>Infra</div>
+    <div class="chip"><i style="background:var(--slate)"></i>Unknown</div>
   </div>
 
   <main class="body" id="body"></main>
@@ -165,29 +167,32 @@ canvas{width:100%;max-width:330px;aspect-ratio:1;display:block}
     <div class="sw-c"><i style="background:#FFAD32"></i><span>#FFAD32</span></div>
     <div class="sw-c"><i style="background:#4497C5"></i><span>#4497C5</span></div>
     <div class="sw-c"><i style="background:#9AA9B8"></i><span>#9AA9B8</span></div>
+    <div class="sw-c"><i style="background:#FFD9A0"></i><span>#FFD9A0</span></div>
     <div class="sw-c"><i style="background:#E53E3E"></i><span>#E53E3E</span></div>
     <div class="sw-c"><i style="background:#0A1B2C"></i><span>#0A1B2C</span></div>
   </div>
-  <p class="note">Gold and blue carry the interface; red is used only for items that need attention. Same structure as the Fieldwatch Live screen: header with scan controls, four views (list, radar, classes, timeline), five-tab bottom bar. Device names, MACs and signal values are sample data. Try the tune button, the view tabs and the Pause tab.</p>
+  <p class="note">Red marks attention and alerts. Gold marks presence (people-carried devices), the pale gold marks vehicles, blue marks infrastructure, grey marks unknown or fading radios. Same structure as the Fieldwatch Live screen: header with scan controls, four views (list, radar, classes, timeline), five-tab bottom bar. Device names, MACs and signal values are sample data. Try the tune button, the view tabs and the Pause tab.</p>
 </section>
 
 <script>
 (function(){
   var D=[
-    {t:'AirTag-class tracker',s:'Apple · Find My · F4:0B:…:2A',c:'Tracker',rssi:-48,avg:-52,col:'var(--red)',att:1,w:0,ic:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8v4l2.5 2'},
-    {t:'Hikvision DS-2CD',s:'Wi-Fi AP · ch 6 · 2437 MHz',c:'Camera',rssi:-57,avg:-60,col:'var(--red)',att:1,w:0,ic:'M4 8h12v8H4zM16 11l5-3v8l-5-3'},
-    {t:'Nearby watch · Tactical',s:'BLE · Garmin · fēnix',c:'Wearable',rssi:-62,avg:-64,col:'var(--gold)',att:0,w:1,ic:'M8 3h8l1 4H7zM7 17h10l-1 4H8zM7 7h10v10H7z'},
-    {t:'JBL Flip 6',s:'BLE · Harman · audio',c:'Audio',rssi:-66,avg:-68,col:'var(--blue)',att:0,w:0,ic:'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'},
-    {t:'Ring Doorbell 4',s:'Wi-Fi AP · ch 11',c:'Camera',rssi:-71,avg:-73,col:'var(--slate)',att:0,w:0,ic:'M4 8h12v8H4zM16 11l5-3v8l-5-3'},
-    {t:'Galaxy Buds2',s:'BLE · Samsung · earbuds',c:'Audio',rssi:-74,avg:-76,col:'var(--blue)',att:0,w:0,ic:'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'},
-    {t:'Meta Ray-Ban',s:'BLE · Luxottica · glasses',c:'Wearable',rssi:-79,avg:-80,col:'var(--gold)',att:0,w:0,ic:'M8 3h8l1 4H7zM7 17h10l-1 4H8zM7 7h10v10H7z'},
-    {t:'TP-Link Deco',s:'Wi-Fi AP · ch 1 · 2412 MHz',c:'Router',rssi:-83,avg:-84,col:'var(--slate)',att:0,w:0,ic:'M5 12a10 10 0 0 1 14 0M8 15a6 6 0 0 1 8 0M12 19h.01'},
-    {t:'Unnamed BLE beacon',s:'BLE · random address',c:'Unknown',rssi:-88,avg:-90,col:'var(--slate)',att:0,w:0,ic:'M12 3l9 16H3z'}
+    {t:'AirTag-class tracker',s:'Apple · Find My · moving with you',c:'Finder tag',rssi:-48,avg:-52,col:'var(--red)',att:1,w:0,ic:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8v4l2.5 2',stale:0},
+    {t:'Hikvision DS-2CD',s:'Wi-Fi AP · surveillance signature',c:'Surveillance',rssi:-57,avg:-60,col:'var(--red)',att:1,w:0,ic:'M4 8h12v8H4zM16 11l5-3v8l-5-3',stale:0},
+    {t:'Meta Ray-Ban',s:'BLE · glasses · extra attention',c:'Glasses',rssi:-61,avg:-63,col:'var(--red)',att:1,w:0,ic:'M8 3h8l1 4H7zM7 17h10l-1 4H8zM7 7h10v10H7z',stale:0},
+    {t:'Pixel 8 (Fast Pair)',s:'BLE · Google · phone',c:'Phone',rssi:-64,avg:-66,col:'var(--gold)',att:0,w:0,ic:'M8 3h8v18H8zM11 18h2',stale:0},
+    {t:'Sony WH-1000XM5',s:'BLE · Sony · headphones',c:'Audio',rssi:-67,avg:-69,col:'var(--gold)',att:0,w:1,ic:'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3',stale:0},
+    {t:'Tesla Model Y',s:'BLE · vehicle',c:'Vehicle',rssi:-72,avg:-74,col:'var(--gold2)',att:0,w:0,ic:'M5 16l1.5-5h11L19 16M5 16v3h3v-2h8v2h3v-3M5 16h14',stale:0},
+    {t:'JBL Flip 6',s:'BLE · Harman · speaker',c:'Audio',rssi:-74,avg:-76,col:'var(--blue)',att:0,w:0,ic:'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3',stale:0},
+    {t:'TP-Link Deco',s:'Wi-Fi AP · ch 1 · mesh',c:'Router',rssi:-79,avg:-80,col:'var(--blue)',att:0,w:0,ic:'M5 12a10 10 0 0 1 14 0M8 15a6 6 0 0 1 8 0M12 19h.01',stale:0},
+    {t:'Schlage Encode',s:'BLE · access control',c:'Lock',rssi:-83,avg:-85,col:'var(--blue)',att:0,w:0,ic:'M7 11h10v9H7zM9 11V8a3 3 0 0 1 6 0v3',stale:0},
+    {t:'Unnamed BLE beacon',s:'BLE · random address',c:'Unknown',rssi:-88,avg:-90,col:'var(--slate)',att:0,w:0,ic:'M12 3l9 16H3z',stale:0},
+    {t:'Wyze Cam v3',s:'Wi-Fi AP · last heard 48 s ago',c:'Camera',rssi:-91,avg:-91,col:'var(--slate)',att:0,w:0,ic:'M4 8h12v8H4zM16 11l5-3v8l-5-3',stale:1},
   ];
   var body=document.getElementById('body'),view='list',paused=false;
   function pct(r){return Math.max(6,Math.min(100,(r+95)*100/55))}
   function row(d){
-    return '<button class="row" style="--acc:'+d.col+'"><span class="glyph"><svg viewBox="0 0 24 24"><path d="'+d.ic+'"/></svg></span>'+
+    return '<button class="row" style="--acc:'+d.col+(d.stale?';opacity:.5':'')+'"><span class="glyph"><svg viewBox="0 0 24 24"><path d="'+d.ic+'"/></svg></span>'+
     '<span style="min-width:0"><div class="t">'+d.t+'</div><div class="s">'+d.s+'</div>'+
     '<div class="tags"><span class="tag-c cls">'+d.c+'</span>'+(d.att?'<span class="tag-c att">Attention</span>':'')+(d.w?'<span class="tag-c watch">Watchlist</span>':'')+'</div></span>'+
     '<span class="num"><b>'+d.rssi+'</b><span>avg '+d.avg+'</span></span>'+
@@ -196,11 +201,11 @@ canvas{width:100%;max-width:330px;aspect-ratio:1;display:block}
   function renderList(){body.innerHTML='<div class="sec">Strongest first</div>'+D.map(row).join('')+'<div style="height:14px"></div>'}
   var raf=0;
   function renderRadar(){
-    body.innerHTML='<div class="radar-wrap"><canvas id="cv" width="660" height="660" aria-label="Radar of radios by signal strength"></canvas><div class="legend"><span><i style="background:var(--red)"></i>Attention</span><span><i style="background:var(--gold)"></i>Watchlist</span><span><i style="background:var(--blue)"></i>Audio</span><span><i style="background:var(--slate)"></i>Other</span></div></div>';
+    body.innerHTML='<div class="radar-wrap"><canvas id="cv" width="660" height="660" aria-label="Radar of radios by signal strength"></canvas><div class="legend"><span><i style="background:var(--red)"></i>Attention</span><span><i style="background:var(--gold)"></i>Presence</span><span><i style="background:var(--gold2)"></i>Vehicle</span><span><i style="background:var(--blue)"></i>Infrastructure</span><span><i style="background:var(--slate)"></i>Unknown</span></div></div>';
     var cv=document.getElementById('cv'),x=cv.getContext('2d'),W=660,C=W/2,R=300,a0=0;
     var css=getComputedStyle(document.documentElement);
     function v(n){return css.getPropertyValue(n).trim()}
-    var map={'var(--red)':v('--red'),'var(--gold)':v('--gold'),'var(--blue)':v('--blue'),'var(--slate)':v('--slate')};
+    var map={'var(--red)':v('--red'),'var(--gold)':v('--gold'),'var(--gold2)':v('--gold2'),'var(--blue)':v('--blue'),'var(--slate)':v('--slate')};
     var pts=D.map(function(d,i){var ang=(i*137.5)*Math.PI/180,r=(-d.rssi-40)/55*R*0.95+20;return{x:C+Math.cos(ang)*r,y:C+Math.sin(ang)*r,c:map[d.col]||v('--blue'),big:d.att}});
     var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function frame(){

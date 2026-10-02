@@ -59,7 +59,7 @@ import app.fieldwatch.ui.component.spectreSectionFill
 import app.fieldwatch.ui.component.spectreTileEdge
 import app.fieldwatch.ui.component.spectreTileFill
 import app.fieldwatch.ui.theme.LocalNightMode
-import app.fieldwatch.ui.theme.PhosphorActive
+import app.fieldwatch.ui.theme.GoldActive
 import app.fieldwatch.ui.theme.nightIf
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -657,7 +657,7 @@ private fun PresetChip(
         color = if (selected) spectreSectionFill() else spectreTileFill(),
         border = BorderStroke(
             1.dp,
-            if (selected) PhosphorActive.nightIf(LocalNightMode.current) else spectreTileEdge(),
+            if (selected) GoldActive.nightIf(LocalNightMode.current) else spectreTileEdge(),
         ),
         modifier = modifier
             .heightIn(max = 32.dp)

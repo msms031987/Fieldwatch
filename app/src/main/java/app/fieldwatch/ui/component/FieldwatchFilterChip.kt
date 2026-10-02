@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.fieldwatch.ui.theme.LocalNightMode
-import app.fieldwatch.ui.theme.PhosphorActive
+import app.fieldwatch.ui.theme.GoldActive
 import app.fieldwatch.ui.theme.nightIf
 
 /**
@@ -31,7 +31,7 @@ fun FieldwatchFilterChip(
     val fill = spectreTileFill()
     val selectedFill = spectreSectionFill()
     val edge = spectreTileEdge()
-    val active = PhosphorActive.nightIf(LocalNightMode.current)
+    val active = GoldActive.nightIf(LocalNightMode.current)
     val labelColor = scheme.onSurface
     FilterChip(
         selected = selected,

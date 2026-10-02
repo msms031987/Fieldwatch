@@ -141,7 +141,7 @@ private fun Callout(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = 8.dp,
         border = BorderStroke(1.5.dp, border),
@@ -279,7 +279,7 @@ private fun layoutSpots(
     }
     val tuneFromX = tune.center.x.coerceIn(tuneBox.left + inset, tuneBox.right - inset)
     return listOf(
-        Spot(tune, "Tune", "Display — Radar, list, timeline, hybrid, By class.", tuneBox, Offset(tuneFromX, tuneBox.top)),
+        Spot(tune, "Tune", "Display options: sort, hold time and what each row shows. Switch views with the List, Radar, Classes and Timeline tabs.", tuneBox, Offset(tuneFromX, tuneBox.top)),
     ) + tabs.mapIndexed { i, t ->
         Spot(t.first, t.second, t.third, boxes[i], fromOn(boxes[i], t.first, i))
     }

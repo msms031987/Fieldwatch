@@ -46,6 +46,7 @@ import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.Sensors
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Bluetooth
 import androidx.compose.material.icons.outlined.Hub
@@ -67,7 +68,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.NavigationBarDefaults
 import app.fieldwatch.ui.component.FieldwatchActionButton
 import app.fieldwatch.ui.component.FieldwatchDropdownField
 import androidx.compose.material3.OutlinedTextField
@@ -75,7 +75,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import app.fieldwatch.ui.component.FieldwatchSwitch
 import androidx.compose.material3.Text
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import app.fieldwatch.ui.component.LiveViewTabs
+import app.fieldwatch.ui.component.SignalHelpDialog
+import app.fieldwatch.ui.i18n.LocalLanguage
+import app.fieldwatch.ui.i18n.LocalPlainLanguage
+import app.fieldwatch.ui.i18n.tr
+import app.fieldwatch.ui.component.ScanPulse
+import app.fieldwatch.ui.component.bissaOpsecWordmark
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -83,9 +92,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -111,19 +122,23 @@ import androidx.navigation.compose.rememberNavController
 import app.fieldwatch.domain.ListLine
 import app.fieldwatch.domain.ListSort
 import app.fieldwatch.domain.StrengthSort
+import app.fieldwatch.domain.Sighting
 import app.fieldwatch.domain.ViewMode
 import app.fieldwatch.domain.FieldwatchDisclaimer
 import app.fieldwatch.domain.disclaimerOk
 import app.fieldwatch.radio.RadioPermissions
 import app.fieldwatch.ui.screen.DeviceDetailScreen
+import app.fieldwatch.ui.screen.DirectionScreen
 import app.fieldwatch.ui.screen.HuntScreen
 import app.fieldwatch.ui.screen.FiltersScreen
 import app.fieldwatch.ui.screen.FleetsScreen
 import app.fieldwatch.ui.screen.LivePane
+import app.fieldwatch.ui.screen.SalaPane
 import app.fieldwatch.ui.screen.CandidatesScreen
 import app.fieldwatch.ui.screen.RadioBookmarksScreen
 import app.fieldwatch.ui.screen.ReportsScreen
 import app.fieldwatch.ui.screen.SettingsScreen
+import app.fieldwatch.ui.screen.SweepScreen
 import app.fieldwatch.ui.theme.FieldwatchTheme
 
 @Composable
@@ -133,109 +148,22 @@ fun FieldwatchRoot(vm: FieldwatchViewModel, onRequestPermissions: () -> Unit) {
         darkTheme = true,
         nightMode = state.settings.nightMode,
     ) {
-        if (!state.settings.disclaimerOk()) {
-            DisclaimerGate(onAccept = vm::acceptDisclaimer)
-        } else if (!state.permissionsOk) {
-            PermissionGate(onRequestPermissions)
-        } else {
-            FieldwatchShell(state, vm)
-        }
-    }
-}
-
-@Composable
-private fun DisclaimerGate(onAccept: () -> Unit) {
-    val ink = MaterialTheme.colorScheme.onSurface
-    var agreed by remember { mutableStateOf(false) }
-    Column(
-        Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 28.dp, vertical = 24.dp),
-    ) {
-        Text(
-            "Disclaimer and license",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = ink,
-        )
-        Text(
-            "Disclaimer",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = ink,
-            modifier = Modifier.padding(top = 20.dp),
-        )
-        Text(
-            FieldwatchDisclaimer.firstRunDisclaimer,
-            style = MaterialTheme.typography.bodyMedium,
-            color = ink,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        Text(
-            FieldwatchDisclaimer.LICENSE_TITLE,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = ink,
-            modifier = Modifier.padding(top = 24.dp),
-        )
-        Text(
-            FieldwatchDisclaimer.LICENSE_BODY,
-            style = MaterialTheme.typography.bodyMedium,
-            color = ink,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        Text(
-            FieldwatchDisclaimer.ACCEPT,
-            style = MaterialTheme.typography.bodyMedium,
-            color = ink,
-            modifier = Modifier.padding(top = 20.dp),
-        )
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
-                .toggleable(
-                    value = agreed,
-                    onValueChange = { agreed = it },
-                    role = Role.Checkbox,
-                ),
-            verticalAlignment = Alignment.CenterVertically,
+        CompositionLocalProvider(
+            LocalLanguage provides state.settings.language,
+            LocalPlainLanguage provides state.settings.plainLanguage,
         ) {
-            Checkbox(checked = agreed, onCheckedChange = null)
-            Text(
-                "I have read this and I agree",
-                style = MaterialTheme.typography.bodyMedium,
-                color = ink,
-                modifier = Modifier.padding(start = 8.dp),
-            )
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
+            when {
+                !state.settings.onboardingDone ->
+                    OnboardingScreen(state.settings.language, vm::setLanguage, vm::finishOnboarding)
+                !state.settings.disclaimerOk() ->
+                    TermsScreen(state.settings.language, vm::setLanguage, vm::acceptDisclaimer)
+                !state.permissionsOk ->
+                    PermissionScreen(state.settings.language, vm::setLanguage, onRequestPermissions)
+                else -> FieldwatchShell(state, vm)
+            }
+            }
         }
-        Button(
-            onClick = onAccept,
-            enabled = agreed,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-        ) { Text("Continue") }
-    }
-}
-
-@Composable
-private fun PermissionGate(onRequest: () -> Unit) {
-    Column(
-        Modifier.fillMaxSize().padding(28.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text("Fieldwatch needs the radios", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-        Text(
-            "Location, nearby Wi-Fi, Bluetooth scan, and notifications let Fieldwatch passively watch advertised networks and BLE devices. Nothing is transmitted.",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(top = 12.dp, bottom = 20.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Button(onClick = onRequest) { Text("Grant permissions") }
     }
 }
 
@@ -357,7 +285,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
             vm.setScanControlsExpanded(false)
         }
     }
-    val keepAwake = state.settings.keepScreenOn || route == "hunt"
+    val keepAwake = state.settings.keepScreenOn || route == "hunt" || route == "direction"
     DisposableEffect(keepAwake) {
         val window = (view.context as? android.app.Activity)?.window
         if (keepAwake) {
@@ -372,12 +300,18 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
     Box(Modifier.fillMaxSize()) {
     Scaffold(
         topBar = {
-            if (route != "detail" && route != "hunt") {
+            if (route != "detail" && route != "hunt" && route != "direction") {
+                Column {
                 TopAppBar(
                     expandedHeight = 52.dp,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
                     title = {
                         val screenW = LocalConfiguration.current.screenWidthDp.dp
-                        val actionW = if (route == "live") 56.dp else 16.dp
+                        val actionW = (if (route == "live") 104.dp else 16.dp) + 56.dp
                         Column(
                             modifier = Modifier
                                 .widthIn(max = (screenW - 20.dp - actionW).coerceAtLeast(120.dp))
@@ -394,16 +328,20 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                                 },
                         ) {
                             Text(
-                                when {
-                                    state.sit.open != null && state.displayPaused ->
-                                        "FIELDWATCH  ·  SIT  ·  PAUSED"
-                                    state.sit.open != null -> "FIELDWATCH  ·  SIT"
-                                    state.displayPaused -> "FIELDWATCH  ·  PAUSED"
-                                    else -> "FIELDWATCH"
-                                },
+                                bissaOpsecWordmark(
+                                    accent = MaterialTheme.colorScheme.primary,
+                                    base = MaterialTheme.colorScheme.onSurface,
+                                    muted = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    suffix = when {
+                                        state.sit.open != null && state.displayPaused -> "  ·  SIT  ·  PAUSED"
+                                        state.sit.open != null -> "  ·  SIT"
+                                        state.displayPaused -> "  ·  PAUSED"
+                                        else -> ""
+                                    },
+                                ),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = 2.sp,
+                                letterSpacing = 3.sp,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
@@ -413,6 +351,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                             ) {
                                 val muted = MaterialTheme.colorScheme.onSurfaceVariant
+                                ScanPulse(scanning = state.scanning, paused = state.displayPaused)
                                 HeaderCount(state.wifiNow, Icons.Outlined.Wifi, "Wi-Fi")
                                 HeaderCount(state.bleNow, Icons.Outlined.Bluetooth, "BLE")
                                 HeaderCount(state.namedNow, Icons.Outlined.Hub, "signatures")
@@ -432,7 +371,15 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                         }
                     },
                     actions = {
+                        LanguageChip(
+                            state.settings.language,
+                            vm::setLanguage,
+                            Modifier.padding(end = 4.dp),
+                        )
                         if (route == "live") {
+                            IconButton(onClick = { nav.navigate("sweep") { launchSingleTop = true } }) {
+                                Icon(Icons.Outlined.Sensors, tr("Sweep"))
+                            }
                             IconButton(
                                 onClick = {
                                     vm.setScanControlsExpanded(!state.settings.scanControlsExpanded)
@@ -457,10 +404,12 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                         }
                     },
                 )
+                HorizontalDivider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f))
+                }
             }
         },
         bottomBar = {
-            if (route != "detail" && route != "hunt") {
+            if (route != "detail" && route != "hunt" && route != "direction") {
                 Column {
                     if (route == "live" && (state.filter.arrivalsOnly || state.filter.movingWithYou)) {
                         LiveSessionBar(
@@ -471,9 +420,9 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                             onStartOverFollow = vm::resetFollowSession,
                         )
                     }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f))
                     Surface(
-                        color = NavigationBarDefaults.containerColor,
-                        tonalElevation = NavigationBarDefaults.Elevation,
+                        color = MaterialTheme.colorScheme.surface,
                         modifier = Modifier
                             .fillMaxWidth()
                             .windowInsetsPadding(WindowInsets.navigationBars),
@@ -557,14 +506,26 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
         ) {
             composable("live") {
                 BoxWithConstraints(Modifier.fillMaxSize()) {
-                    LivePane(
-                        state = state,
-                        vm = vm,
-                        onOpen = {
-                            vm.select(it)
-                            nav.navigate("detail")
-                        },
-                    )
+                    val openDetail = { device: Sighting ->
+                        vm.select(device)
+                        nav.navigate("detail")
+                    }
+                    var showSignalHelp by rememberSaveable { mutableStateOf(false) }
+                    if (showSignalHelp) SignalHelpDialog { showSignalHelp = false }
+                    if (state.settings.salaMode) {
+                        SalaPane(state, vm, openDetail)
+                    } else {
+                        Column(Modifier.fillMaxSize()) {
+                            LiveViewTabs(
+                                mode = state.settings.viewMode,
+                                onChange = vm::setViewMode,
+                                onHelp = { showSignalHelp = true },
+                            )
+                            Box(Modifier.weight(1f)) {
+                                LivePane(state = state, vm = vm, onOpen = openDetail)
+                            }
+                        }
+                    }
                     AnimatedVisibility(
                         visible = state.settings.scanControlsExpanded,
                         enter = fadeIn(),
@@ -642,6 +603,14 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                     },
                 )
             }
+            composable("sweep") {
+                SweepScreen(
+                    state = state,
+                    vm = vm,
+                    onBack = { nav.popBackStack() },
+                    onOpenLive = { nav.navigate("live") { launchSingleTop = true } },
+                )
+            }
             composable("candidates") {
                 CandidatesScreen(
                     vm = vm,
@@ -708,9 +677,22 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                             vm.startHunt(device)
                             nav.navigate("hunt")
                         },
+                        onDirection = {
+                            vm.startHunt(device)
+                            nav.navigate("direction")
+                        },
                         demoMode = state.settings.demoMode,
                     )
                 }
+            }
+            composable("direction") {
+                DirectionScreen(
+                    vm = vm,
+                    onBack = {
+                        vm.stopHunt()
+                        nav.popBackStack()
+                    },
+                )
             }
             composable("hunt") {
                 HuntScreen(
@@ -769,10 +751,16 @@ private fun RowScope.FieldwatchNavTab(
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
+    val indicator = MaterialTheme.colorScheme.primary
     Column(
         Modifier
             .weight(weight)
             .clickable(onClick = onClick)
+            .drawBehind {
+                if (selected) {
+                    drawRect(indicator, size = androidx.compose.ui.geometry.Size(size.width, 2.dp.toPx()))
+                }
+            }
             .padding(horizontal = 2.dp, vertical = 1.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -787,8 +775,9 @@ private fun RowScope.FieldwatchNavTab(
                 }
             }
             Text(
-                label,
-                style = MaterialTheme.typography.labelSmall,
+                tr(label).uppercase(),
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = 0.8.sp),
+                fontWeight = FontWeight.SemiBold,
                 color = color,
                 maxLines = 1,
                 softWrap = false,
@@ -847,9 +836,9 @@ private fun ViewPicker(
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 4.dp)
             .heightIn(max = panelMax),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(3.dp),
         color = surfaceColor,
-        tonalElevation = 3.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
         shadowElevation = 8.dp,
     ) {
         Box {
@@ -861,9 +850,11 @@ private fun ViewPicker(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                "Display",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                tr("DISPLAY"),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 2.sp,
+                color = MaterialTheme.colorScheme.primary,
             )
             val dropdownPad = Modifier.fillMaxWidth().padding(vertical = 6.dp)
             ExposedDropdownMenuBox(openView, { openView = it }, dropdownPad) {

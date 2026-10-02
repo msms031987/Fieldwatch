@@ -103,6 +103,7 @@ object SettingsExchange {
                 disclaimerAccepted = local.settings.disclaimerAccepted,
                 disclaimerRev = local.settings.disclaimerRev,
                 liveTourDone = local.settings.liveTourDone,
+                onboardingDone = local.settings.onboardingDone,
                 darkTheme = true,
                 scanControlsExpanded = false,
             ),

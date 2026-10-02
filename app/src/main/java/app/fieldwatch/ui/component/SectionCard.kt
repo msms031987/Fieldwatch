@@ -13,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import app.fieldwatch.ui.i18n.tr
+import androidx.compose.ui.unit.sp
 
 /** Grouped settings/filter block. Same surface bar as Signatures class headers. */
 @Composable
@@ -23,19 +25,20 @@ fun SectionCard(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)),
     ) {
         Column(
             Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                title,
-                style = MaterialTheme.typography.titleSmall,
+                tr(title).uppercase(),
+                style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
+                letterSpacing = 2.sp,
+                color = MaterialTheme.colorScheme.primary,
             )
             content()
         }

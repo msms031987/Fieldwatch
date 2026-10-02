@@ -59,6 +59,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.isActive
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -83,7 +84,9 @@ import app.fieldwatch.domain.OutlineSnap
 import app.fieldwatch.domain.ListLine
 import app.fieldwatch.domain.MacUtil
 import app.fieldwatch.domain.ListSort
-import app.fieldwatch.domain.Palette
+import app.fieldwatch.domain.Proximities
+import app.fieldwatch.domain.Proximity
+import app.fieldwatch.domain.RadioRole
 import app.fieldwatch.domain.RadarPlot
 import app.fieldwatch.domain.RadioKind
 import app.fieldwatch.domain.Sighting
@@ -100,19 +103,29 @@ import app.fieldwatch.ui.component.PresenceTrack
 import app.fieldwatch.ui.component.RssiBar
 import app.fieldwatch.ui.component.Sparkline
 import app.fieldwatch.ui.component.TrendMark
-import app.fieldwatch.ui.component.rssiColor
-import app.fieldwatch.ui.theme.Cyan
+import app.fieldwatch.ui.component.SignalBars
+import app.fieldwatch.ui.component.color
+import app.fieldwatch.ui.i18n.LocalPlainLanguage
+import app.fieldwatch.ui.i18n.tr
+import app.fieldwatch.ui.theme.BissaBlue
 import app.fieldwatch.ui.theme.LocalNightMode
-import app.fieldwatch.ui.theme.PhosphorActive
+import app.fieldwatch.ui.theme.GoldActive
 import app.fieldwatch.ui.theme.nightIf
 import kotlin.math.cos
 import kotlin.math.sin
+
+/** A radio not heard for this long (or already marked gone) fades to grey. */
+private const val STALE_MS = 30_000L
 
 @Composable
 fun LivePane(
     state: FieldwatchUi,
     vm: FieldwatchViewModel,
     onOpen: (Sighting) -> Unit,
+    /** Show this view instead of the saved one. Sala mode uses it to place several views at once. */
+    forceMode: ViewMode? = null,
+    /** Status lines above the view: paused, filters, open sit. Sala shows them once, not per panel. */
+    banners: Boolean = true,
 ) {
     val live = state.filtered
     val sort = state.settings.strengthSort
@@ -130,7 +143,7 @@ fun LivePane(
     var renameSit by remember { mutableStateOf(false) }
     var renameDraft by remember { mutableStateOf("") }
     Column(Modifier.fillMaxSize()) {
-        if (state.displayPaused) {
+        if (banners && state.displayPaused) {
             Text(
                 "Display paused · radios still scanning and logging. Filters still apply when you run again. Tap Live to run the list again.",
                 style = MaterialTheme.typography.labelSmall,
@@ -138,7 +151,7 @@ fun LivePane(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
             )
         }
-        if (state.filter.arrivalsOnly) {
+        if (banners && state.filter.arrivalsOnly) {
             Text(
                 when {
                     state.arrivalsLearning -> "New only · learning sitting Wi-Fi"
@@ -150,7 +163,7 @@ fun LivePane(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
             )
         }
-        if (state.filter.movingWithYou) {
+        if (banners && state.filter.movingWithYou) {
             Text(
                 "Follow · path ${state.operatorSpanM.toInt()} m · Start over clears the path",
                 style = MaterialTheme.typography.labelSmall,
@@ -158,7 +171,7 @@ fun LivePane(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
             )
         }
-        if (state.filter.watchedOnly) {
+        if (banners && state.filter.watchedOnly) {
             Text(
                 "Watched only",
                 style = MaterialTheme.typography.labelSmall,
@@ -166,7 +179,7 @@ fun LivePane(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
             )
         }
-        if (state.filter.customNamesOnly) {
+        if (banners && state.filter.customNamesOnly) {
             Text(
                 "Named radios only",
                 style = MaterialTheme.typography.labelSmall,
@@ -175,7 +188,7 @@ fun LivePane(
             )
         }
         val openSit = state.sit.open
-        if (openSit != null) {
+        if (banners && openSit != null) {
             val now = System.currentTimeMillis()
             val dur = Sit.fmtDuration(openSit.durationMs(now))
             val cap = when {
@@ -229,7 +242,7 @@ fun LivePane(
             )
         }
         Box(Modifier.weight(1f).fillMaxWidth()) {
-            when (state.settings.viewMode) {
+            when (forceMode ?: state.settings.viewMode) {
                 ViewMode.RADAR -> RadarView(live, vm, sort, windowMs, onOpen, emptyHint = arrivalsEmpty(state), showFleet = showFleet, demoMode = demoMode, flashKeys = flashKeys, alertedKeys = alertedKeys)
                 ViewMode.LIST -> RankedList(live, vm, onOpen, sparklines = false, sort = sort, windowMs = windowMs, showBar = showBar, layoutEpoch = state.settings.scanControlsExpanded, emptyHint = arrivalsEmpty(state), showNewAge = state.filter.arrivalsOnly, showFleet = showFleet, showFrequency = showFrequency, showSeenTimes = showSeenTimes, flashKeys = flashKeys, alertedKeys = alertedKeys, pinEnd = pinEnd, titleLine = titleLine, subtitleLine = subtitleLine, demoMode = demoMode)
                 ViewMode.TIMELINE -> TimelineView(live, vm, onOpen, showFleet = showFleet, showFrequency = showFrequency, showSeenTimes = showSeenTimes, flashKeys = flashKeys, alertedKeys = alertedKeys, titleLine = titleLine, subtitleLine = subtitleLine, demoMode = demoMode)
@@ -431,7 +444,7 @@ private fun ClassOutlineView(
                             title = vm.fleetName(sig.fleetId),
                             count = sig.radios.size,
                             subtitle = null,
-                            accent = Color(Palette.color(vm.fleetColor(sig.fleetId)))
+                            accent = vm.fleetRole(sig.fleetId).color()
                                 .nightIf(LocalNightMode.current),
                             expanded = sigKey in openSigs,
                             indent = true,
@@ -473,7 +486,7 @@ private fun OutlineGroupRow(
     val mute = MaterialTheme.colorScheme.onSurfaceVariant
     val mark = if (empty) mute else accent
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = if (indent) 0.dp else 1.dp,
         modifier = Modifier
@@ -578,7 +591,7 @@ private fun outlineRadioRow(
 
 private fun ClassSlice.accent(vm: FieldwatchViewModel): Color {
     val id = signatures.firstOrNull()?.fleetId ?: radios.firstOrNull()?.fleetIds?.firstOrNull()
-    return if (id != null) Color(Palette.color(vm.fleetColor(id))) else rssiColor(-80)
+    return (if (id != null) vm.fleetRole(id) else RadioRole.UNKNOWN).color()
 }
 
 private fun radarRadius(rssi: Int, maxR: Float, zoom: Float = 1f): Float =
@@ -738,7 +751,14 @@ private fun RadarView(
 ) {
     val sweep = rememberRadarSweepDegrees()
     val night = LocalNightMode.current
-    val ring = MaterialTheme.colorScheme.outline
+    val plainSignal = LocalPlainLanguage.current
+    val ringLabels = mapOf(
+        -40 to tr(Proximity.VERY_CLOSE.label),
+        -60 to tr(Proximity.CLOSE.label),
+        -80 to tr(Proximity.FAR.label),
+        -100 to tr(Proximity.FAINT.label),
+    )
+    val ring = BissaBlue.nightIf(night)
     val beam = MaterialTheme.colorScheme.primary
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
     val youColor = MaterialTheme.colorScheme.primary
@@ -823,7 +843,7 @@ private fun RadarView(
                 val rr = radarRadius(dbm, maxR, z)
                 if (rr > maxR + 0.5f) return@forEach
                 drawCircle(ring.copy(alpha = 0.55f), radius = rr, center = c, style = Stroke(2.2f))
-                val layout = measurer.measure("$dbm", ringStyle)
+                val layout = measurer.measure(if (plainSignal) ringLabels.getValue(dbm) else "$dbm", ringStyle)
                 drawText(
                     layout,
                     topLeft = Offset(c.x + 6f, c.y - rr - layout.size.height),
@@ -837,7 +857,7 @@ private fun RadarView(
             }
 
             val now = System.currentTimeMillis()
-            val phosphor = PhosphorActive.nightIf(night)
+            val phosphor = GoldActive.nightIf(night)
             fun contact(device: Sighting, persist: Boolean = true): Triple<Offset, Color, Boolean>? {
                 val plotRssi = device.sortRssi(sort, windowMs, now)
                 if (!RadarPlot.onDisc(plotRssi.toInt(), maxR, z)) return null
@@ -845,9 +865,7 @@ private fun RadarView(
                 val named = device.fleetIds.isNotEmpty()
                 val paint = if (persist) sweepPaint(sweepBehindDegrees(sweep.floatValue, device.mac)) else 1f
                 val alpha = (if (device.gone) 0.45f else 1f) * (0.35f + 0.65f * paint)
-                val color = (device.fleetIds.firstOrNull()
-                    ?.let { Color(Palette.color(vm.fleetColor(it))) }
-                    ?: rssiColor(plotRssi.toInt()))
+                val color = vm.deviceRole(device, alerted = device.key in alertedKeys).color()
                     .nightIf(night)
                     .copy(alpha = alpha)
                 return Triple(pos, color, named)
@@ -915,6 +933,14 @@ private fun RadarView(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontFamily = FontFamily.Monospace,
             )
+            if (plainSignal) {
+                Text(
+                    tr("Closer to the center = stronger signal. Position around the circle does not show direction."),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
         }
     }
 }
@@ -1111,9 +1137,10 @@ fun DeviceRow(
 ) {
     val heardRssi = device.heardRssi(sort, windowMs, now).toInt()
     val rankRssi = device.sortRssi(sort, windowMs, now).toInt()
-    val accent = (device.fleetIds.firstOrNull()
-        ?.let { Color(Palette.color(vm.fleetColor(it))) }
-        ?: rssiColor(heardRssi))
+    val plainSignal = LocalPlainLanguage.current
+    val prox = Proximities.of(heardRssi)
+    val stale = device.gone || now - device.lastSeen > STALE_MS
+    val accent = (if (stale) RadioRole.UNKNOWN else vm.deviceRole(device, alerted)).color()
         .nightIf(LocalNightMode.current)
     val named = showFleet && device.fleetIds.isNotEmpty()
     val roomy = showBar || sparklines || showSeenTimes
@@ -1124,14 +1151,20 @@ fun DeviceRow(
         label = "alertFlash",
     )
     Surface(
-        shape = RoundedCornerShape(if (roomy) 12.dp else 8.dp),
+        shape = RoundedCornerShape(3.dp),
         color = rowColor,
-        tonalElevation = 1.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)),
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onOpen(device) },
     ) {
-        Column(Modifier.padding(horizontal = 12.dp, vertical = if (roomy) 6.dp else 4.dp)) {
+        Column(
+            Modifier
+                .drawBehind {
+                    drawRect(accent, size = androidx.compose.ui.geometry.Size(2.dp.toPx(), size.height))
+                }
+                .padding(start = 14.dp, end = 12.dp, top = if (roomy) 6.dp else 4.dp, bottom = if (roomy) 6.dp else 4.dp),
+        ) {
             Row(verticalAlignment = Alignment.Top) {
                 RadioClassBadge(
                     classKind = device.fleetIds.firstOrNull()?.let { vm.fleetKind(it) },
@@ -1181,11 +1214,15 @@ fun DeviceRow(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         TrendMark(device.rssiTrend())
                         Spacer(Modifier.width(4.dp))
-                        Text(
-                            "${device.rssi}",
-                            style = compactLine(16.sp, 18.sp, FontWeight.Bold).copy(fontFamily = FontFamily.Monospace),
-                            color = accent,
-                        )
+                        if (plainSignal && prox != null) {
+                            SignalBars(prox)
+                        } else {
+                            Text(
+                                "${device.rssi}",
+                                style = compactLine(16.sp, 18.sp, FontWeight.Bold).copy(fontFamily = FontFamily.Monospace),
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
                     }
                     if (showFrequency) {
                         val fact = radioFactLine(device)
@@ -1203,6 +1240,12 @@ fun DeviceRow(
                             if (ageSec < 60L) "new ${ageSec}s" else "new ${ageSec / 60L}m",
                             style = compactLine(10.sp, 11.sp).copy(fontFamily = FontFamily.Monospace),
                             color = MaterialTheme.colorScheme.primary,
+                        )
+                    } else if (plainSignal && prox != null) {
+                        Text(
+                            tr(prox.label),
+                            style = compactLine(10.sp, 11.sp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     } else if (sort == StrengthSort.AVERAGE) {
                         Text(
@@ -1274,7 +1317,7 @@ private fun FleetNameChips(
             }
         }
         if (observed) {
-            val ink = Cyan.nightIf(LocalNightMode.current)
+            val ink = BissaBlue.nightIf(LocalNightMode.current)
             Surface(
                 shape = RoundedCornerShape(99.dp),
                 color = ink.copy(alpha = 0.22f),
@@ -1290,7 +1333,7 @@ private fun FleetNameChips(
             }
         }
         if (alerted) {
-            val mark = PhosphorActive.nightIf(LocalNightMode.current)
+            val mark = GoldActive.nightIf(LocalNightMode.current)
             Surface(
                 shape = RoundedCornerShape(99.dp),
                 color = mark.copy(alpha = 0.22f),
@@ -1306,7 +1349,7 @@ private fun FleetNameChips(
             }
         }
         if (showNames) device.fleetIds.take(3).forEach { id ->
-            val color = Color(Palette.color(vm.fleetColor(id)))
+            val color = vm.fleetRole(id).color()
                 .nightIf(LocalNightMode.current)
             val mapped = vm.fleetHasDecode(id)
             Surface(
@@ -1342,7 +1385,7 @@ private fun FleetNameChips(
         }
         device.liveDecode.forEach { chip ->
             val id = device.fleetIds.firstOrNull()
-            val color = (id?.let { Color(Palette.color(vm.fleetColor(it))) }
+            val color = (id?.let { vm.fleetRole(it).color() }
                 ?: MaterialTheme.colorScheme.primary)
                 .nightIf(LocalNightMode.current)
             Surface(
@@ -1419,9 +1462,7 @@ private fun TimelineView(
             )
         }
         items(devices, key = { it.key }) { device ->
-            val color = (device.fleetIds.firstOrNull()
-                ?.let { Color(Palette.color(vm.fleetColor(it))) }
-                ?: rssiColor(device.rssi))
+            val color = vm.deviceRole(device, alerted = device.key in alertedKeys).color()
                 .nightIf(LocalNightMode.current)
             val flash = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
             val rowColor by animateColorAsState(
@@ -1430,7 +1471,7 @@ private fun TimelineView(
                 label = "alertFlash",
             )
             Surface(
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(4.dp),
                 color = rowColor,
                 modifier = Modifier
                     .fillMaxWidth()

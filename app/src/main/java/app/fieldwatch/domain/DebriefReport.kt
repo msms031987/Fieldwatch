@@ -65,7 +65,7 @@ data class DebriefDoc(
     val takeaway: String,
     val sections: List<DebriefSection>,
     val extraAttention: List<ExtraAttentionHit> = emptyList(),
-    val heading: String = "FIELDWATCH FIELD DEBRIEF",
+    val heading: String = "BISSA OPSEC FIELD DEBRIEF",
     val pdfKicker: String = "FIELD DEBRIEF",
     val pdfTitle: String = "Field debrief",
     val pathFigure: SitPathPlot.Figure? = null,
@@ -414,9 +414,9 @@ object DebriefReport {
             "last 15 minutes (${utc(windowStart)} → ${utc(windowEnd)} UTC)"
         }
         val heading = if (win.sitName != null) {
-            "FIELDWATCH SIT — ${win.sitName}"
+            "BISSA OPSEC SIT — ${win.sitName}"
         } else {
-            "FIELDWATCH FIELD DEBRIEF"
+            "BISSA OPSEC FIELD DEBRIEF"
         }
         val meta = buildList {
             add("Generated" to "${utc(now)} UTC")

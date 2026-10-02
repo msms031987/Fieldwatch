@@ -6,13 +6,13 @@ import java.net.URL
 /** HTTPS GET of the stock signature pack on GitHub. No account. Fails to the caller. */
 object CatalogRemote {
     const val STOCK_PACK_URL =
-        "https://raw.githubusercontent.com/OffGridPete/Fieldwatch/main/dist/fieldwatch-signatures-v2.json"
+        "https://raw.githubusercontent.com/msms031987/Fieldwatch/main/dist/fieldwatch-signatures-v2.json"
 
     fun fetch(
         url: String = STOCK_PACK_URL,
         connectTimeoutMs: Int = 10_000,
         readTimeoutMs: Int = 15_000,
-        userAgent: String = "Fieldwatch",
+        userAgent: String = "BISSA-OpSec",
     ): String {
         val connection = (URL(url).openConnection() as HttpURLConnection).apply {
             instanceFollowRedirects = true

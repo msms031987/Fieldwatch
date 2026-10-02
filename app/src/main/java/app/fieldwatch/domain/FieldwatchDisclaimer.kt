@@ -13,7 +13,7 @@ object FieldwatchDisclaimer {
 
     const val LIABILITY =
         "You are solely responsible for how you use this app and for following local law. " +
-            "To the maximum extent permitted by law, Off Grid Pete LLC is not liable for " +
+            "To the maximum extent permitted by law, the authors and contributors are not liable for " +
             "indirect, incidental, special, consequential, or punitive damages arising from its use."
 
     const val LOCATION =

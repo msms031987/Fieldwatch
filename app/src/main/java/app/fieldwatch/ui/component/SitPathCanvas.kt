@@ -58,9 +58,9 @@ import app.fieldwatch.domain.SignatureClass
 import app.fieldwatch.domain.SitPathPlot
 import app.fieldwatch.ui.ClassGlyphs
 import app.fieldwatch.ui.RadioClassBadge
-import app.fieldwatch.ui.theme.Cyan
+import app.fieldwatch.ui.theme.BissaBlue
 import app.fieldwatch.ui.theme.LocalNightMode
-import app.fieldwatch.ui.theme.PhosphorActive
+import app.fieldwatch.ui.theme.GoldActive
 import app.fieldwatch.ui.theme.nightIf
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -78,7 +78,7 @@ fun SitPathCanvas(
 ) {
     val track = MaterialTheme.colorScheme.onSurface
     val night = LocalNightMode.current
-    val you = Cyan.nightIf(night)
+    val you = BissaBlue.nightIf(night)
     val glyphs = classGlyphPainters()
     val pilotPainter = rememberVectorPainter(Icons.Outlined.Person)
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
@@ -167,7 +167,7 @@ fun SitPathCanvas(
                     val t = trace.getOrNull(i)?.at ?: continue
                     if (stays.none { t in it.startAt..it.endAt }) continue
                     drawLine(
-                        PhosphorActive.copy(alpha = 0.9f),
+                        GoldActive.copy(alpha = 0.9f),
                         Offset(lay.path[i - 1].x, lay.path[i - 1].y),
                         Offset(lay.path[i].x, lay.path[i].y),
                         strokeWidth = 9f,
@@ -176,7 +176,7 @@ fun SitPathCanvas(
                 }
                 stays.forEach { stay ->
                     val pt = lay.project(stay.lat, stay.lon)
-                    drawCircle(PhosphorActive.copy(alpha = 0.22f), radius = 16f, center = Offset(pt.x, pt.y))
+                    drawCircle(GoldActive.copy(alpha = 0.22f), radius = 16f, center = Offset(pt.x, pt.y))
                 }
                 val dur = (trace.last().at - trace.first().at).coerceAtLeast(1L)
                 listOf(0.25, 0.5, 0.75).forEach { frac ->
@@ -260,8 +260,8 @@ fun SitPathCanvas(
                     .align(if (onRight) Alignment.TopEnd else Alignment.TopStart)
                     .padding(8.dp)
                     .widthIn(max = 248.dp)
-                    .background(surface, RoundedCornerShape(8.dp))
-                    .border(1.dp, outline, RoundedCornerShape(8.dp))
+                    .background(surface, RoundedCornerShape(4.dp))
+                    .border(1.dp, outline, RoundedCornerShape(4.dp))
                     .padding(8.dp),
             ) {
                 Text(
@@ -309,11 +309,11 @@ fun SitPathCanvas(
     }
 }
 
-internal val AircraftAmber = Color(0xFFC47A00)
+internal val AircraftAmber = Color(0xFFB87A1E)
 
 private val ClusterFill = Color(0xFF1A2330)
 private val ClusterInk = Color(0xFFF4F7FB)
-private val UnmatchedDisc = Color(0xFF8D6E63)
+private val UnmatchedDisc = Color(0xFF9AA9B8)
 
 @Composable
 private fun classGlyphPainters(): Map<SignatureClass?, Painter> {

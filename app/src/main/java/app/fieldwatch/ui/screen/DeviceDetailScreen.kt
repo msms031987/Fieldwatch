@@ -21,6 +21,7 @@ import app.fieldwatch.ui.component.DecodeGlyph
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.GroupAdd
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.WarningAmber
@@ -55,11 +56,14 @@ import app.fieldwatch.domain.FamilyVerdict
 import app.fieldwatch.domain.Geo
 import app.fieldwatch.domain.MacUtil
 import app.fieldwatch.domain.DeviceExplain
-import app.fieldwatch.domain.Palette
 import app.fieldwatch.domain.RadioDb
 import app.fieldwatch.domain.RadioBookmarks
 import app.fieldwatch.domain.RadioKind
+import app.fieldwatch.domain.Proximities
 import app.fieldwatch.domain.Rssi
+import app.fieldwatch.ui.component.SignalBars
+import app.fieldwatch.ui.i18n.LocalPlainLanguage
+import app.fieldwatch.ui.i18n.tr
 import app.fieldwatch.domain.ServiceDataRecord
 import app.fieldwatch.domain.Sighting
 import app.fieldwatch.domain.SignatureFamilyHint
@@ -70,13 +74,13 @@ import app.fieldwatch.radio.BleAdParser
 import app.fieldwatch.ui.RadioKindMark
 import app.fieldwatch.ui.FieldwatchViewModel
 import app.fieldwatch.ui.theme.Amber
-import app.fieldwatch.ui.theme.Cyan
+import app.fieldwatch.ui.theme.BissaBlue
 import app.fieldwatch.ui.theme.LocalNightMode
 import app.fieldwatch.ui.theme.nightIf
 import app.fieldwatch.ui.component.PresenceTrack
 import app.fieldwatch.ui.component.Sparkline
 import app.fieldwatch.ui.component.StickyHeight
-import app.fieldwatch.ui.component.rssiColor
+import app.fieldwatch.ui.component.color
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -91,12 +95,11 @@ fun DeviceDetailScreen(
     onBack: () -> Unit,
     onCreateFleet: () -> Unit,
     onHunt: () -> Unit,
+    onDirection: () -> Unit,
     demoMode: Boolean = false,
 ) {
     val fmt = SimpleDateFormat("HH:mm:ss", Locale.US)
-    val accent = (device.fleetIds.firstOrNull()
-        ?.let { Color(Palette.color(vm.fleetColor(it))) }
-        ?: rssiColor(device.rssi))
+    val accent = vm.deviceRole(device).color()
         .nightIf(LocalNightMode.current)
     val facts = device.facts
     val familyHint by vm.familyHint.collectAsStateWithLifecycle()
@@ -312,11 +315,31 @@ fun DeviceDetailScreen(
                     )
                 } else {
                     Meta("How loud here (RSSI)", DeviceExplain.rssiExplain(device.rssi))
-                    Text(
-                        "Closer to 0 dBm is louder here, not a distance.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    val prox = Proximities.of(device.rssi)
+                    if (LocalPlainLanguage.current && prox != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            SignalBars(prox)
+                            Text(
+                                tr(prox.label),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        Text(
+                            tr(prox.meaning) + " " + tr(Proximities.NOT_DISTANCE),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else {
+                        Text(
+                            "Closer to 0 dBm is louder here, not a distance.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
                 Meta(
                     "Heard range this session",
@@ -578,6 +601,14 @@ fun DeviceDetailScreen(
                     Spacer(Modifier.padding(4.dp))
                     Text("Hunt")
                 }
+                FieldwatchActionButton(
+                    onClick = onDirection,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(Icons.Outlined.Explore, null)
+                    Spacer(Modifier.padding(4.dp))
+                    Text(tr("Find direction"))
+                }
             } else {
                 Text(
                     "Hunt is BLE only. Wi-Fi access points update too slowly on stock Android to walk toward.",
@@ -636,7 +667,7 @@ private fun FamilyCard(hint: SignatureFamilyHint) {
     val muted = onContainer.copy(alpha = 0.78f)
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = container,
     ) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -681,7 +712,7 @@ private fun SignatureNotesCard(notes: List<Pair<String, String>>) {
     if (notes.isEmpty()) return
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
     ) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -710,10 +741,10 @@ private fun ObserverNotesCard(
     saveEnabled: Boolean,
     saved: Boolean,
 ) {
-    val ink = Cyan.nightIf(LocalNightMode.current)
+    val ink = BissaBlue.nightIf(LocalNightMode.current)
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = ink.copy(alpha = 0.18f),
         border = BorderStroke(1.5.dp, ink),
     ) {
@@ -781,7 +812,7 @@ private fun ExtraAttentionCard(notes: List<Pair<String, String>>) {
     val warn = Amber.nightIf(LocalNightMode.current)
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = warn.copy(alpha = 0.28f),
         border = BorderStroke(1.5.dp, warn),
     ) {
@@ -817,7 +848,7 @@ private fun ExtraAttentionCard(notes: List<Pair<String, String>>) {
 private fun GuessCard(guess: DeviceExplain.Guess) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
     ) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {

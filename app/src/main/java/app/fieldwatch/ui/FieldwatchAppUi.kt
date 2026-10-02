@@ -78,6 +78,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import app.fieldwatch.ui.component.LiveViewTabs
+import app.fieldwatch.ui.i18n.LocalLanguage
+import app.fieldwatch.ui.i18n.tr
 import app.fieldwatch.ui.component.ScanPulse
 import app.fieldwatch.ui.component.bissaOpsecWordmark
 import androidx.compose.runtime.Composable
@@ -138,109 +140,17 @@ fun FieldwatchRoot(vm: FieldwatchViewModel, onRequestPermissions: () -> Unit) {
         darkTheme = true,
         nightMode = state.settings.nightMode,
     ) {
-        if (!state.settings.disclaimerOk()) {
-            DisclaimerGate(onAccept = vm::acceptDisclaimer)
-        } else if (!state.permissionsOk) {
-            PermissionGate(onRequestPermissions)
-        } else {
-            FieldwatchShell(state, vm)
+        CompositionLocalProvider(LocalLanguage provides state.settings.language) {
+            when {
+                !state.settings.onboardingDone ->
+                    OnboardingScreen(state.settings.language, vm::setLanguage, vm::finishOnboarding)
+                !state.settings.disclaimerOk() ->
+                    TermsScreen(state.settings.language, vm::setLanguage, vm::acceptDisclaimer)
+                !state.permissionsOk ->
+                    PermissionScreen(state.settings.language, vm::setLanguage, onRequestPermissions)
+                else -> FieldwatchShell(state, vm)
+            }
         }
-    }
-}
-
-@Composable
-private fun DisclaimerGate(onAccept: () -> Unit) {
-    val ink = MaterialTheme.colorScheme.onSurface
-    var agreed by remember { mutableStateOf(false) }
-    Column(
-        Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 28.dp, vertical = 24.dp),
-    ) {
-        Text(
-            "Disclaimer and license",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = ink,
-        )
-        Text(
-            "Disclaimer",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = ink,
-            modifier = Modifier.padding(top = 20.dp),
-        )
-        Text(
-            FieldwatchDisclaimer.firstRunDisclaimer,
-            style = MaterialTheme.typography.bodyMedium,
-            color = ink,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        Text(
-            FieldwatchDisclaimer.LICENSE_TITLE,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = ink,
-            modifier = Modifier.padding(top = 24.dp),
-        )
-        Text(
-            FieldwatchDisclaimer.LICENSE_BODY,
-            style = MaterialTheme.typography.bodyMedium,
-            color = ink,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        Text(
-            FieldwatchDisclaimer.ACCEPT,
-            style = MaterialTheme.typography.bodyMedium,
-            color = ink,
-            modifier = Modifier.padding(top = 20.dp),
-        )
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
-                .toggleable(
-                    value = agreed,
-                    onValueChange = { agreed = it },
-                    role = Role.Checkbox,
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Checkbox(checked = agreed, onCheckedChange = null)
-            Text(
-                "I have read this and I agree",
-                style = MaterialTheme.typography.bodyMedium,
-                color = ink,
-                modifier = Modifier.padding(start = 8.dp),
-            )
-        }
-        Button(
-            onClick = onAccept,
-            enabled = agreed,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-        ) { Text("Continue") }
-    }
-}
-
-@Composable
-private fun PermissionGate(onRequest: () -> Unit) {
-    Column(
-        Modifier.fillMaxSize().padding(28.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text("Fieldwatch needs the radios", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-        Text(
-            "Location, nearby Wi-Fi, Bluetooth scan, and notifications let Fieldwatch passively watch advertised networks and BLE devices. Nothing is transmitted.",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(top = 12.dp, bottom = 20.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Button(onClick = onRequest) { Text("Grant permissions") }
     }
 }
 
@@ -388,7 +298,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                     ),
                     title = {
                         val screenW = LocalConfiguration.current.screenWidthDp.dp
-                        val actionW = if (route == "live") 56.dp else 16.dp
+                        val actionW = (if (route == "live") 56.dp else 16.dp) + 56.dp
                         Column(
                             modifier = Modifier
                                 .widthIn(max = (screenW - 20.dp - actionW).coerceAtLeast(120.dp))
@@ -448,6 +358,11 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                         }
                     },
                     actions = {
+                        LanguageChip(
+                            state.settings.language,
+                            vm::setLanguage,
+                            Modifier.padding(end = 4.dp),
+                        )
                         if (route == "live") {
                             IconButton(
                                 onClick = {
@@ -816,7 +731,7 @@ private fun RowScope.FieldwatchNavTab(
                 }
             }
             Text(
-                label.uppercase(),
+                tr(label).uppercase(),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = 0.8.sp),
                 fontWeight = FontWeight.SemiBold,
                 color = color,
@@ -891,7 +806,7 @@ private fun ViewPicker(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                "DISPLAY",
+                tr("DISPLAY"),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = 2.sp,

@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.fieldwatch.domain.ViewMode
+import app.fieldwatch.ui.i18n.tr
 import app.fieldwatch.ui.theme.BissaBlue
 
 private data class LiveTab(val label: String, val mode: ViewMode)
@@ -73,7 +74,7 @@ fun LiveViewTabs(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    tab.label.uppercase(),
+                    tr(tab.label).uppercase(),
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, letterSpacing = 1.6.sp),
                     fontWeight = FontWeight.SemiBold,
                     color = if (selected) accent else muted,
@@ -97,9 +98,9 @@ fun ScanPulse(scanning: Boolean, paused: Boolean) {
         label = "scanPulseAlpha",
     )
     val (label, color, beating) = when {
-        paused -> Triple("PAUSED", MaterialTheme.colorScheme.primary, false)
-        scanning -> Triple("SCANNING", BissaBlue, true)
-        else -> Triple("IDLE", MaterialTheme.colorScheme.onSurfaceVariant, false)
+        paused -> Triple(tr("PAUSED"), MaterialTheme.colorScheme.primary, false)
+        scanning -> Triple(tr("SCANNING"), BissaBlue, true)
+        else -> Triple(tr("IDLE"), MaterialTheme.colorScheme.onSurfaceVariant, false)
     }
     Row(
         verticalAlignment = Alignment.CenterVertically,

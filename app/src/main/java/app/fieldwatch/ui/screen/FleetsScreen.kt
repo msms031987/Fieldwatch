@@ -71,6 +71,7 @@ import app.fieldwatch.domain.Fleet
 import app.fieldwatch.domain.MatchRule
 import app.fieldwatch.domain.RadioRoles
 import app.fieldwatch.ui.component.color
+import app.fieldwatch.ui.i18n.tr
 import app.fieldwatch.ui.theme.LocalNightMode
 import app.fieldwatch.ui.theme.nightIf
 import app.fieldwatch.domain.RadioKind
@@ -142,7 +143,7 @@ fun FleetsScreen(
     }
     Scaffold(
         contentWindowInsets = NestedTabInsets,
-        topBar = { NestedTopBar("Signatures (${state.fleets.size})") },
+        topBar = { NestedTopBar("${tr("Signatures")} (${state.fleets.size})") },
         floatingActionButton = {
             FloatingActionButton(onClick = vm::beginNewFleet) {
                 Icon(Icons.Outlined.Add, "New signature")

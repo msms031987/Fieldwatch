@@ -634,6 +634,12 @@ data class AppSettings(
     val disclaimerRev: Int = 0,
     /** Chrome overlay on Live after the license. Settings can show it again. */
     val liveTourDone: Boolean = false,
+    /** UI language: "en" or "es". Strings without a Spanish entry stay in English. */
+    val language: String = "en",
+    /** Intro slides shown once, before the license. Settings can show them again. */
+    val onboardingDone: Boolean = false,
+    /** Sala mode: dense situation-room layout on Live. */
+    val salaMode: Boolean = false,
     /** Signatures tab: Name A–Z (default) or Class A–Z. */
     val signatureListSort: SignatureListSort = SignatureListSort.NAME,
     /** By class: hide class headers with 0 radios. Off = show all (zeros stay). */

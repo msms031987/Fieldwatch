@@ -39,6 +39,8 @@ import androidx.compose.material3.Scaffold
 import app.fieldwatch.ui.component.FieldwatchSlider
 import androidx.compose.material3.Surface
 import app.fieldwatch.ui.component.FieldwatchSwitch
+import app.fieldwatch.ui.LanguageChip
+import app.fieldwatch.ui.i18n.tr
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -114,6 +116,28 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SectionCard("Appearance") {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(tr("Language"), Modifier.weight(1f))
+                LanguageChip(settings.language, vm::setLanguage)
+            }
+            Text(
+                tr("Spanish covers the main screens, the intro and the terms. Text without a translation stays in English."),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(tr("Sala mode"), Modifier.weight(1f))
+                FieldwatchSwitch(settings.salaMode, { on -> vm.updateSettings { it.copy(salaMode = on) } })
+            }
+            Text(
+                tr("Dense situation-room layout on Live: role counters, radar, list and attention feed together. Best on a tablet or in landscape."),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            FieldwatchActionButton(
+                onClick = vm::showOnboarding,
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text(tr("Show intro again")) }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Night mode", Modifier.weight(1f))
                 FieldwatchSwitch(settings.nightMode, { on -> vm.updateSettings { it.copy(nightMode = on) } })

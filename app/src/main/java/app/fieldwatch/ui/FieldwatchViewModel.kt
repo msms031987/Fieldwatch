@@ -476,6 +476,24 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
+    fun finishOnboarding() {
+        viewModelScope.launch {
+            app.config.update { it.copy(settings = it.settings.copy(onboardingDone = true)) }
+        }
+    }
+
+    fun showOnboarding() {
+        viewModelScope.launch {
+            app.config.update { it.copy(settings = it.settings.copy(onboardingDone = false)) }
+        }
+    }
+
+    fun setLanguage(code: String) {
+        viewModelScope.launch {
+            app.config.update { it.copy(settings = it.settings.copy(language = code)) }
+        }
+    }
+
     fun dismissLiveTour() {
         viewModelScope.launch {
             app.config.update {

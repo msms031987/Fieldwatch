@@ -23,10 +23,10 @@ class NightColorTest {
     }
 
     @Test
-    fun phosphorConstantsUnchanged() {
+    fun accentConstantsMatchBissaPalette() {
         assertEquals(0xFFFFAD32.toInt(), Gold.toArgb())
         assertEquals(0xFFFFAD32.toInt(), GoldActive.toArgb())
-        assertEquals(0xFFFFB020.toInt(), Amber.toArgb())
+        assertEquals(0xFFFFAD32.toInt(), Amber.toArgb())
     }
 
     @Test

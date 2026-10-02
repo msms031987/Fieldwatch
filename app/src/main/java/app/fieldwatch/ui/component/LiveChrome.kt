@@ -14,6 +14,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +55,7 @@ fun LiveViewTabs(
     mode: ViewMode,
     onChange: (ViewMode) -> Unit,
     modifier: Modifier = Modifier,
+    onHelp: (() -> Unit)? = null,
 ) {
     val accent = MaterialTheme.colorScheme.primary
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
@@ -80,6 +85,22 @@ fun LiveViewTabs(
                     color = if (selected) accent else muted,
                     maxLines = 1,
                     softWrap = false,
+                )
+            }
+        }
+        if (onHelp != null) {
+            Box(
+                Modifier
+                    .width(40.dp)
+                    .height(40.dp)
+                    .clickable(onClick = onHelp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    Icons.Outlined.HelpOutline,
+                    contentDescription = tr("How to read the signal"),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp),
                 )
             }
         }

@@ -58,7 +58,11 @@ import app.fieldwatch.domain.DeviceExplain
 import app.fieldwatch.domain.RadioDb
 import app.fieldwatch.domain.RadioBookmarks
 import app.fieldwatch.domain.RadioKind
+import app.fieldwatch.domain.Proximities
 import app.fieldwatch.domain.Rssi
+import app.fieldwatch.ui.component.SignalBars
+import app.fieldwatch.ui.i18n.LocalPlainLanguage
+import app.fieldwatch.ui.i18n.tr
 import app.fieldwatch.domain.ServiceDataRecord
 import app.fieldwatch.domain.Sighting
 import app.fieldwatch.domain.SignatureFamilyHint
@@ -309,11 +313,31 @@ fun DeviceDetailScreen(
                     )
                 } else {
                     Meta("How loud here (RSSI)", DeviceExplain.rssiExplain(device.rssi))
-                    Text(
-                        "Closer to 0 dBm is louder here, not a distance.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    val prox = Proximities.of(device.rssi)
+                    if (LocalPlainLanguage.current && prox != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            SignalBars(prox)
+                            Text(
+                                tr(prox.label),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        Text(
+                            tr(prox.meaning) + " " + tr(Proximities.NOT_DISTANCE),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else {
+                        Text(
+                            "Closer to 0 dBm is louder here, not a distance.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
                 Meta(
                     "Heard range this session",

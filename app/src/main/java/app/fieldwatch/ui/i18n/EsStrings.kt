@@ -119,6 +119,43 @@ object EsStrings {
             "Diseño denso de sala de situación en En vivo: contadores por rol, radar, lista y alertas juntos. Ideal en tablet o en horizontal.",
         "Show intro again" to "Ver la intro otra vez",
 
+        // Plain-language signal
+        "Very close" to "Muy cerca",
+        "Close" to "Cerca",
+        "In the area" to "En la zona",
+        "Far" to "Lejos",
+        "Barely heard" to "Apenas se escucha",
+        "Probably within arm's reach or on the same table, often in a hand, pocket or bag." to
+            "Probablemente al alcance de la mano o en la misma mesa, a menudo en una mano, un bolsillo o una bolsa.",
+        "Probably in the same room." to "Probablemente en el mismo cuarto.",
+        "Probably another room, or around 10 meters away through walls." to
+            "Probablemente en otro cuarto, o a unos 10 metros con paredes de por medio.",
+        "Far away, or behind several walls." to "Lejos, o detrás de varias paredes.",
+        "Barely picked up. It could be very far away or blocked." to
+            "Apenas se capta. Puede estar muy lejos o bloqueado.",
+        "This is a guess from signal strength, not a measurement of distance." to
+            "Es una estimación a partir de la fuerza de la señal, no una medición de distancia.",
+        "How to read the signal" to "Cómo leer la señal",
+        "A stronger signal usually means the device is closer. Walls, bodies and the device itself change it, so use it as a hint." to
+            "Una señal más fuerte suele indicar que el aparato está más cerca. Las paredes, los cuerpos y el propio aparato la alteran, así que usala como una pista.",
+        "The radar" to "El radar",
+        "The closer to the center, the stronger the signal. Where a dot sits around the circle does not show direction: the phone cannot tell which side a signal comes from." to
+            "Cuanto más cerca del centro, más fuerte es la señal. El lugar donde un punto aparece alrededor del círculo no indica dirección: el teléfono no puede saber de qué lado viene una señal.",
+        "To find a device" to "Para encontrar un aparato",
+        "Walk and watch whether the signal rises or falls. That is more reliable than any single reading. Open a radio and use Hunt." to
+            "Caminá y mirá si la señal sube o baja. Es más confiable que cualquier lectura aislada. Abrí un radio y usá Hunt.",
+        "Got it" to "Entendido",
+        "Closer to the center = stronger signal. Position around the circle does not show direction." to
+            "Más cerca del centro = señal más fuerte. La posición alrededor del círculo no indica dirección.",
+        "Plain-language signal" to "Señal en lenguaje claro",
+        "On: signal shows as bars and words like Very close or Far, and the radar rings are labeled. Off: raw dBm numbers." to
+            "Activado: la señal se muestra con barras y palabras como Muy cerca o Lejos, y los anillos del radar tienen nombre. Desactivado: números dBm.",
+        "Signal is a hint, not a ruler" to "La señal es una pista, no una regla",
+        "hint" to "pista",
+        "A stronger signal usually means closer, but walls, bodies and the device itself change it. Walk toward a signal and see if it rises to be sure." to
+            "Una señal más fuerte suele significar que está más cerca, pero las paredes, los cuerpos y el propio aparato la alteran. Caminá hacia una señal y mirá si sube para confirmarlo.",
+        "Roughly" to "Aproximadamente",
+
         // Sala mode
         "SALA" to "SALA",
         "RADAR" to "RADAR",

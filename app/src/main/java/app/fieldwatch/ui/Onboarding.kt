@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.SignalCellularAlt
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -173,6 +174,12 @@ private val slides = listOf(
         "meaning",
         "One color per role, so the list reads at a glance.",
         legend = true,
+    ),
+    OnboardingSlide(
+        Icons.Outlined.SignalCellularAlt,
+        "Signal is a hint, not a ruler",
+        "hint",
+        "A stronger signal usually means closer, but walls, bodies and the device itself change it. Walk toward a signal and see if it rises to be sure.",
     ),
     OnboardingSlide(
         Icons.Outlined.Dashboard,

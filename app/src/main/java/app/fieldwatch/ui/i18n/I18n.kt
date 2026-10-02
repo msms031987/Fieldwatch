@@ -4,6 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 
+/** True when signal strength is described in words and bars instead of dBm numbers. */
+val LocalPlainLanguage = staticCompositionLocalOf { true }
+
 /** Current UI language code: "en" or "es". */
 val LocalLanguage = staticCompositionLocalOf { "en" }
 

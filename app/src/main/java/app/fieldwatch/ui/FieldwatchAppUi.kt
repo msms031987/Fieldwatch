@@ -78,7 +78,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import app.fieldwatch.ui.component.LiveViewTabs
+import app.fieldwatch.ui.component.SignalHelpDialog
 import app.fieldwatch.ui.i18n.LocalLanguage
+import app.fieldwatch.ui.i18n.LocalPlainLanguage
 import app.fieldwatch.ui.i18n.tr
 import app.fieldwatch.ui.component.ScanPulse
 import app.fieldwatch.ui.component.bissaOpsecWordmark
@@ -89,6 +91,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -142,7 +145,10 @@ fun FieldwatchRoot(vm: FieldwatchViewModel, onRequestPermissions: () -> Unit) {
         darkTheme = true,
         nightMode = state.settings.nightMode,
     ) {
-        CompositionLocalProvider(LocalLanguage provides state.settings.language) {
+        CompositionLocalProvider(
+            LocalLanguage provides state.settings.language,
+            LocalPlainLanguage provides state.settings.plainLanguage,
+        ) {
             when {
                 !state.settings.onboardingDone ->
                     OnboardingScreen(state.settings.language, vm::setLanguage, vm::finishOnboarding)
@@ -496,11 +502,17 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                         vm.select(device)
                         nav.navigate("detail")
                     }
+                    var showSignalHelp by rememberSaveable { mutableStateOf(false) }
+                    if (showSignalHelp) SignalHelpDialog { showSignalHelp = false }
                     if (state.settings.salaMode) {
                         SalaPane(state, vm, openDetail)
                     } else {
                         Column(Modifier.fillMaxSize()) {
-                            LiveViewTabs(mode = state.settings.viewMode, onChange = vm::setViewMode)
+                            LiveViewTabs(
+                                mode = state.settings.viewMode,
+                                onChange = vm::setViewMode,
+                                onHelp = { showSignalHelp = true },
+                            )
                             Box(Modifier.weight(1f)) {
                                 LivePane(state = state, vm = vm, onOpen = openDetail)
                             }

@@ -40,6 +40,7 @@ import app.fieldwatch.ui.component.FieldwatchSlider
 import androidx.compose.material3.Surface
 import app.fieldwatch.ui.component.FieldwatchSwitch
 import app.fieldwatch.ui.LanguageChip
+import app.fieldwatch.ui.component.SignalHelpDialog
 import app.fieldwatch.ui.i18n.tr
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -125,6 +126,21 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(tr("Plain-language signal"), Modifier.weight(1f))
+                FieldwatchSwitch(settings.plainLanguage, { on -> vm.updateSettings { it.copy(plainLanguage = on) } })
+            }
+            Text(
+                tr("On: signal shows as bars and words like Very close or Far, and the radar rings are labeled. Off: raw dBm numbers."),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            var showSignalHelp by remember { mutableStateOf(false) }
+            if (showSignalHelp) SignalHelpDialog { showSignalHelp = false }
+            FieldwatchActionButton(
+                onClick = { showSignalHelp = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text(tr("How to read the signal")) }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(tr("Sala mode"), Modifier.weight(1f))
                 FieldwatchSwitch(settings.salaMode, { on -> vm.updateSettings { it.copy(salaMode = on) } })

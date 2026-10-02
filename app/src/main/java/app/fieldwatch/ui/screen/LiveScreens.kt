@@ -84,6 +84,8 @@ import app.fieldwatch.domain.OutlineSnap
 import app.fieldwatch.domain.ListLine
 import app.fieldwatch.domain.MacUtil
 import app.fieldwatch.domain.ListSort
+import app.fieldwatch.domain.Proximities
+import app.fieldwatch.domain.Proximity
 import app.fieldwatch.domain.RadioRole
 import app.fieldwatch.domain.RadarPlot
 import app.fieldwatch.domain.RadioKind
@@ -101,7 +103,10 @@ import app.fieldwatch.ui.component.PresenceTrack
 import app.fieldwatch.ui.component.RssiBar
 import app.fieldwatch.ui.component.Sparkline
 import app.fieldwatch.ui.component.TrendMark
+import app.fieldwatch.ui.component.SignalBars
 import app.fieldwatch.ui.component.color
+import app.fieldwatch.ui.i18n.LocalPlainLanguage
+import app.fieldwatch.ui.i18n.tr
 import app.fieldwatch.ui.theme.BissaBlue
 import app.fieldwatch.ui.theme.LocalNightMode
 import app.fieldwatch.ui.theme.GoldActive
@@ -746,6 +751,13 @@ private fun RadarView(
 ) {
     val sweep = rememberRadarSweepDegrees()
     val night = LocalNightMode.current
+    val plainSignal = LocalPlainLanguage.current
+    val ringLabels = mapOf(
+        -40 to tr(Proximity.VERY_CLOSE.label),
+        -60 to tr(Proximity.CLOSE.label),
+        -80 to tr(Proximity.FAR.label),
+        -100 to tr(Proximity.FAINT.label),
+    )
     val ring = BissaBlue.nightIf(night)
     val beam = MaterialTheme.colorScheme.primary
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -831,7 +843,7 @@ private fun RadarView(
                 val rr = radarRadius(dbm, maxR, z)
                 if (rr > maxR + 0.5f) return@forEach
                 drawCircle(ring.copy(alpha = 0.55f), radius = rr, center = c, style = Stroke(2.2f))
-                val layout = measurer.measure("$dbm", ringStyle)
+                val layout = measurer.measure(if (plainSignal) ringLabels.getValue(dbm) else "$dbm", ringStyle)
                 drawText(
                     layout,
                     topLeft = Offset(c.x + 6f, c.y - rr - layout.size.height),
@@ -921,6 +933,14 @@ private fun RadarView(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontFamily = FontFamily.Monospace,
             )
+            if (plainSignal) {
+                Text(
+                    tr("Closer to the center = stronger signal. Position around the circle does not show direction."),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
         }
     }
 }
@@ -1117,6 +1137,8 @@ fun DeviceRow(
 ) {
     val heardRssi = device.heardRssi(sort, windowMs, now).toInt()
     val rankRssi = device.sortRssi(sort, windowMs, now).toInt()
+    val plainSignal = LocalPlainLanguage.current
+    val prox = Proximities.of(heardRssi)
     val stale = device.gone || now - device.lastSeen > STALE_MS
     val accent = (if (stale) RadioRole.UNKNOWN else vm.deviceRole(device, alerted)).color()
         .nightIf(LocalNightMode.current)
@@ -1192,11 +1214,15 @@ fun DeviceRow(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         TrendMark(device.rssiTrend())
                         Spacer(Modifier.width(4.dp))
-                        Text(
-                            "${device.rssi}",
-                            style = compactLine(16.sp, 18.sp, FontWeight.Bold).copy(fontFamily = FontFamily.Monospace),
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
+                        if (plainSignal && prox != null) {
+                            SignalBars(prox)
+                        } else {
+                            Text(
+                                "${device.rssi}",
+                                style = compactLine(16.sp, 18.sp, FontWeight.Bold).copy(fontFamily = FontFamily.Monospace),
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
                     }
                     if (showFrequency) {
                         val fact = radioFactLine(device)
@@ -1214,6 +1240,12 @@ fun DeviceRow(
                             if (ageSec < 60L) "new ${ageSec}s" else "new ${ageSec / 60L}m",
                             style = compactLine(10.sp, 11.sp).copy(fontFamily = FontFamily.Monospace),
                             color = MaterialTheme.colorScheme.primary,
+                        )
+                    } else if (plainSignal && prox != null) {
+                        Text(
+                            tr(prox.label),
+                            style = compactLine(10.sp, 11.sp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     } else if (sort == StrengthSort.AVERAGE) {
                         Text(

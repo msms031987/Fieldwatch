@@ -638,6 +638,8 @@ data class AppSettings(
     val language: String = "en",
     /** Intro slides shown once, before the license. Settings can show them again. */
     val onboardingDone: Boolean = false,
+    /** Show Very close / Close / Far words and signal bars instead of raw dBm numbers. */
+    val plainLanguage: Boolean = true,
     /** Sala mode: dense situation-room layout on Live. */
     val salaMode: Boolean = false,
     /** Signatures tab: Name A–Z (default) or Class A–Z. */

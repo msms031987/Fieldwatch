@@ -44,7 +44,16 @@ private val DarkColors = darkColorScheme(
     surfaceVariant = Panel2,
     onSurfaceVariant = Color(0xFF9AA9B8),
     outline = Color(0xFF1F3347),
+    outlineVariant = Color(0xFF16283A),
     error = SignalRed,
+    surfaceTint = Color.Transparent,
+    surfaceDim = Night,
+    surfaceBright = Color(0xFF10263A),
+    surfaceContainerLowest = Night,
+    surfaceContainerLow = Panel,
+    surfaceContainer = Panel,
+    surfaceContainerHigh = Panel2,
+    surfaceContainerHighest = Color(0xFF10263A),
 )
 
 /**
@@ -81,7 +90,9 @@ private val LightColors = lightColorScheme(
     surfaceVariant = Color(0xFFE4EAF1),
     onSurfaceVariant = Color(0xFF3F4F60),
     outline = Color(0xFFC3CED9),
+    outlineVariant = Color(0xFFD9E1E9),
     error = Color(0xFFB00020),
+    surfaceTint = Color.Transparent,
 )
 
 val Montserrat = FontFamily(

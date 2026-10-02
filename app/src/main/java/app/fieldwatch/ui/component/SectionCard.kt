@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /** Grouped settings/filter block. Same surface bar as Signatures class headers. */
 @Composable
@@ -32,10 +33,11 @@ fun SectionCard(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                title,
-                style = MaterialTheme.typography.titleSmall,
+                title.uppercase(),
+                style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
+                letterSpacing = 2.sp,
+                color = MaterialTheme.colorScheme.primary,
             )
             content()
         }

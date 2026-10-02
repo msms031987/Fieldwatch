@@ -402,7 +402,7 @@ private fun FieldCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(
+                app.fieldwatch.ui.component.FieldwatchSwitch(
                     checked = field.live,
                     onCheckedChange = { onChange(field.copy(live = it)) },
                 )

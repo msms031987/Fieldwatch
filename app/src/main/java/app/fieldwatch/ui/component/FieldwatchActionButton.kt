@@ -3,6 +3,7 @@ package app.fieldwatch.ui.component
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -55,7 +56,11 @@ fun FieldwatchActionButton(
             disabledContainerColor = fill.copy(alpha = 0.4f),
             disabledContentColor = scheme.onSurface.copy(alpha = 0.38f),
         ),
-        border = BorderStroke(1.dp, if (enabled) edge else edge.copy(alpha = 0.4f)),
+        shape = RoundedCornerShape(3.dp),
+        border = BorderStroke(
+            1.dp,
+            if (enabled) scheme.primary.copy(alpha = 0.35f) else edge.copy(alpha = 0.4f),
+        ),
         content = content,
     )
 }

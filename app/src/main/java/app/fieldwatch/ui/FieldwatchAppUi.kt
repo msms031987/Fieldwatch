@@ -378,7 +378,7 @@ private fun FieldwatchShell(state: FieldwatchUi, vm: FieldwatchViewModel) {
                         )
                         if (route == "live") {
                             IconButton(onClick = { nav.navigate("sweep") { launchSingleTop = true } }) {
-                                Icon(Icons.Outlined.Sensors, tr("Sweep"))
+                                Icon(Icons.Outlined.Sensors, tr("Guard mode"))
                             }
                             IconButton(
                                 onClick = {

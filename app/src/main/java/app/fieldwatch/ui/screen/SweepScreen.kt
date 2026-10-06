@@ -21,6 +21,12 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -97,11 +103,12 @@ fun SweepScreen(
     onBack: () -> Unit,
     onOpenLive: () -> Unit,
 ) {
+    var tab by rememberSaveable { mutableIntStateOf(0) }
     Scaffold(
         contentWindowInsets = NestedTabInsets,
         topBar = {
             NestedTopBar(
-                title = "Sweep",
+                title = "Guard mode",
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
@@ -118,6 +125,22 @@ fun SweepScreen(
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FieldwatchFilterChip(
+                    selected = tab == 0,
+                    onClick = { tab = 0 },
+                    label = { Text(tr("Check (in hand)")) },
+                )
+                FieldwatchFilterChip(
+                    selected = tab == 1,
+                    onClick = { tab = 1 },
+                    label = { Text(tr("Watch (at rest)")) },
+                )
+            }
+            if (tab == 1) {
+                GuardPanel(state)
+                return@Column
+            }
             Text(
                 tr("Prototype. These tools help you decide where to look. They cannot prove a room is clean, and a camera that records to a card and never connects to anything can pass every one of them. Nothing from the camera or sensors is saved or sent."),
                 style = MaterialTheme.typography.bodySmall,
@@ -362,12 +385,34 @@ private fun CameraPane(mode: LensMode, irFront: Boolean) {
     val visible = candidates.filter { c ->
         dismissed.none { abs(it.x - c.x) + abs(it.y - c.y) < 0.06f }
     }
+    val confirmedCount = visible.count { it.confirmed }
+    val pulse by rememberInfiniteTransition(label = "tint").animateFloat(
+        initialValue = 0.10f,
+        targetValue = 0.28f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+        label = "tintAlpha",
+    )
     Box(
         Modifier
             .fillMaxWidth()
             .aspectRatio(3f / 4f),
     ) {
         AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(SignalRed.copy(alpha = if (confirmedCount > 0) pulse else 0.12f)),
+        )
+        Text(
+            if (confirmedCount > 0) tr("Possible lens") else tr("Sweep active"),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .background(Color.Black.copy(alpha = 0.5f))
+                .padding(horizontal = 10.dp, vertical = 3.dp),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+        )
         Canvas(
             Modifier
                 .fillMaxSize()
@@ -384,7 +429,7 @@ private fun CameraPane(mode: LensMode, irFront: Boolean) {
         ) {
             visible.forEach { c ->
                 val center = Offset(c.x * size.width, c.y * size.height)
-                val color = if (c.confirmed) Color(0xFFFFAD32) else Slate
+                val color = if (c.confirmed) Color.White else Color.White.copy(alpha = 0.55f)
                 drawCircle(color, radius = if (c.confirmed) 26f else 16f, center = center, style = Stroke(if (c.confirmed) 4f else 2f))
                 if (c.confirmed) {
                     drawLine(color, Offset(center.x - 40f, center.y), Offset(center.x - 30f, center.y), 3f)

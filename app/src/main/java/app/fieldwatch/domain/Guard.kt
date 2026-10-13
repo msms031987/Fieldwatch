@@ -15,7 +15,7 @@ class GuardMonitor(
     private val countdownMs: Long = 15_000L,
     private val cooldownMs: Long = 8_000L,
 ) {
-    enum class Kind { MOTION, LIGHT, MAGNETIC, CHARGER, RADIO }
+    enum class Kind { MOTION, LIGHT, MAGNETIC, CHARGER, RADIO, VOICE }
 
     enum class Sensitivity(val motion: Float, val magnetic: Float, val lightFactor: Float) {
         LOW(1.5f, 20f, 1.0f),
@@ -150,6 +150,11 @@ class GuardMonitor(
         if (phase == Phase.ARMED && chargingAtArm == true && !isCharging) {
             fire(Kind.CHARGER, nowMs, "The charger was unplugged")
         }
+    }
+
+    /** Called once each time a voice starts. */
+    fun onVoiceStart(nowMs: Long) {
+        fire(Kind.VOICE, nowMs, "A voice was heard")
     }
 
     fun onRadios(heard: List<RadioObs>, nowMs: Long) {

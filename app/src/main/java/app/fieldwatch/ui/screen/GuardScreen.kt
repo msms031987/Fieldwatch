@@ -10,6 +10,33 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.Manifest
+import android.content.pm.PackageManager
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.MediaPlayer
+import android.media.MediaRecorder
+import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.core.content.FileProvider
+import app.fieldwatch.domain.ClipStore
+import app.fieldwatch.domain.VoiceDetector
+import app.fieldwatch.domain.Wav
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.mutableIntStateOf
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.BatteryManager
@@ -45,6 +72,7 @@ import app.fieldwatch.ui.component.FieldwatchFilterChip
 import app.fieldwatch.ui.component.SectionCard
 import app.fieldwatch.ui.i18n.tr
 import app.fieldwatch.ui.theme.SignalRed
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 
 private tailrec fun Context.findActivity(): Activity? = when (this) {
@@ -59,6 +87,7 @@ private fun kindLabel(k: Kind): String = when (k) {
     Kind.MAGNETIC -> "Magnetic field"
     Kind.CHARGER -> "Charger"
     Kind.RADIO -> "New radios"
+    Kind.VOICE -> "Voices"
 }
 
 private fun sensitivityLabel(s: Sensitivity): String = when (s) {
@@ -77,7 +106,24 @@ fun GuardPanel(state: FieldwatchUi) {
     var sensitivity by remember { mutableStateOf(Sensitivity.MEDIUM) }
     var monitor by remember { mutableStateOf<GuardMonitor?>(null) }
     var refresh by remember { mutableLongStateOf(0L) }
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("guard", Context.MODE_PRIVATE) }
+    var record by remember { mutableStateOf(false) }
+    var showLegal by remember { mutableStateOf(false) }
+    var micDenied by remember { mutableStateOf(false) }
+    var clipVersion by remember { mutableIntStateOf(0) }
+    val store = remember { ClipStore(File(context.filesDir, "guard_clips")) }
     val m = monitor
+
+    fun startMonitor() {
+        val g = GuardMonitor(kinds, sensitivity)
+        g.arm(SystemClock.elapsedRealtime())
+        monitor = g
+    }
+    val micLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        micDenied = !ok
+        if (ok) startMonitor()
+    }
 
     if (m == null) {
         SectionCard("Watch") {
@@ -108,6 +154,33 @@ fun GuardPanel(state: FieldwatchUi) {
                     )
                 }
             }
+            if (Kind.VOICE in kinds) {
+                FieldwatchFilterChip(
+                    selected = record,
+                    onClick = {
+                        if (record) {
+                            record = false
+                        } else if (prefs.getBoolean("legal_ok", false)) {
+                            record = true
+                        } else {
+                            showLegal = true
+                        }
+                    },
+                    label = { Text(tr("Record clips when a voice is heard (keeps the last 20)")) },
+                )
+                Text(
+                    tr("Voice detection is approximate: a TV or people talking outside can trigger it, and a whisper can be missed. Clips stay on this phone."),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (micDenied) {
+                Text(
+                    tr("The microphone permission was not granted, so the guard did not start."),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SignalRed,
+                )
+            }
             Text(
                 tr("The charger alarm only works if the phone is charging when you arm. A new radio only counts if it is close or matches a known signature. A fan, a passing truck or someone walking by can move a light or magnetic reading: try it first and adjust."),
                 style = MaterialTheme.typography.bodySmall,
@@ -115,18 +188,51 @@ fun GuardPanel(state: FieldwatchUi) {
             )
             FieldwatchActionButton(
                 onClick = {
-                    val g = GuardMonitor(kinds, sensitivity)
-                    g.arm(SystemClock.elapsedRealtime())
-                    monitor = g
+                    val needsMic = Kind.VOICE in kinds
+                    val hasMic = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
+                        PackageManager.PERMISSION_GRANTED
+                    micDenied = false
+                    if (needsMic && !hasMic) micLauncher.launch(Manifest.permission.RECORD_AUDIO) else startMonitor()
                 },
                 enabled = kinds.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth(),
             ) { Text(tr("Arm")) }
         }
+        ClipsCard(store, clipVersion) { clipVersion++ }
+        if (showLegal) {
+            AlertDialog(
+                onDismissRequest = { showLegal = false },
+                title = { Text(tr("Recording voices")) },
+                text = {
+                    Text(
+                        tr("Recording the voices of other people may be restricted by law where you live. Use this only where it is allowed, such as in your own space, and tell the people who are there. Clips stay on this phone only; the last 20 are kept."),
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        prefs.edit().putBoolean("legal_ok", true).apply()
+                        record = true
+                        showLegal = false
+                    }) { Text(tr("I understand")) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showLegal = false }) { Text(tr("Cancel")) }
+                },
+            )
+        }
         return
     }
 
-    ArmedGuard(m, state, refresh, onTick = { refresh = it }, onDisarm = { m.disarm(); monitor = null })
+    ArmedGuard(
+        m, state, refresh,
+        voiceOn = Kind.VOICE in kinds,
+        record = record && Kind.VOICE in kinds,
+        store = store,
+        onClip = { clipVersion++ },
+        onTick = { refresh = it },
+        onDisarm = { m.disarm(); monitor = null },
+    )
+    ClipsCard(store, clipVersion) { clipVersion++ }
 }
 
 @Composable
@@ -134,6 +240,10 @@ private fun ArmedGuard(
     m: GuardMonitor,
     state: FieldwatchUi,
     refresh: Long,
+    voiceOn: Boolean,
+    record: Boolean,
+    store: ClipStore,
+    onClip: () -> Unit,
     onTick: (Long) -> Unit,
     onDisarm: () -> Unit,
 ) {
@@ -213,6 +323,10 @@ private fun ArmedGuard(
         m.onRadios(heard, SystemClock.elapsedRealtime())
     }
 
+    LaunchedEffect(m, voiceOn, record) {
+        if (voiceOn) withContext(Dispatchers.IO) { listenForVoices(m, record, store, onClip) }
+    }
+
     val alarming = m.alarming()
     LaunchedEffect(alarming) {
         if (!alarming) return@LaunchedEffect
@@ -253,6 +367,13 @@ private fun ArmedGuard(
                 color = MaterialTheme.colorScheme.primary,
             )
         }
+        if (record) {
+            Text(
+                tr("Recording clips when a voice is heard. Only where the law allows it."),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         m.events().asReversed().forEach { e ->
             val ago = ((now - e.atMs) / 1000).coerceAtLeast(0)
             Text(
@@ -268,3 +389,177 @@ private fun ArmedGuard(
 }
 
 private const val NEAR_RSSI = -60
+
+
+private const val MAX_CLIP_BYTES = 60 * VoiceDetector.SAMPLE_RATE * 2
+private const val PRE_ROLL_FRAMES = 31
+
+/**
+ * Listens to the microphone, flags voices to the guard and, if asked, saves a clip around each
+ * one. Runs until its coroutine is cancelled. Audio never leaves the phone.
+ */
+private suspend fun listenForVoices(
+    m: GuardMonitor,
+    record: Boolean,
+    store: ClipStore,
+    onClip: () -> Unit,
+) {
+    val minBuf = AudioRecord.getMinBufferSize(
+        VoiceDetector.SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
+    )
+    if (minBuf <= 0) return
+    val rec = try {
+        AudioRecord(
+            MediaRecorder.AudioSource.MIC,
+            VoiceDetector.SAMPLE_RATE,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_16BIT,
+            maxOf(minBuf, 8192),
+        )
+    } catch (e: Exception) {
+        return
+    }
+    if (rec.state != AudioRecord.STATE_INITIALIZED) {
+        rec.release()
+        return
+    }
+    val main = Handler(Looper.getMainLooper())
+    val detector = VoiceDetector()
+    val frame = ShortArray(VoiceDetector.FRAME_SAMPLES)
+    val preRoll = ArrayDeque<ShortArray>()
+    var writer: Wav.Writer? = null
+    fun closeClip() {
+        writer?.let {
+            runCatching { it.close() }
+            store.prune()
+            main.post { onClip() }
+        }
+        writer = null
+    }
+    try {
+        rec.startRecording()
+        while (currentCoroutineContext().isActive) {
+            var read = 0
+            while (read < frame.size) {
+                val r = rec.read(frame, read, frame.size - read)
+                if (r <= 0) break
+                read += r
+            }
+            if (read < frame.size) {
+                kotlinx.coroutines.delay(20)
+                continue
+            }
+            val now = SystemClock.elapsedRealtime()
+            val was = detector.speaking
+            val speaking = detector.process(frame, now)
+            val armed = m.phase == GuardMonitor.Phase.ARMED
+            if (speaking && !was && armed) main.post { m.onVoiceStart(SystemClock.elapsedRealtime()) }
+            if (record && armed && speaking) {
+                if (writer == null) {
+                    writer = Wav.Writer(store.newFile(System.currentTimeMillis()))
+                    preRoll.forEach { writer?.write(it) }
+                    preRoll.clear()
+                }
+                writer?.write(frame)
+                if ((writer?.dataBytes ?: 0) >= MAX_CLIP_BYTES) closeClip()
+            } else {
+                if (writer != null) closeClip()
+                preRoll.addLast(frame.copyOf())
+                while (preRoll.size > PRE_ROLL_FRAMES) preRoll.removeFirst()
+            }
+        }
+    } finally {
+        closeClip()
+        runCatching { rec.stop() }
+        rec.release()
+    }
+}
+
+@Composable
+private fun ClipsCard(store: ClipStore, version: Int, onChanged: () -> Unit) {
+    val context = LocalContext.current
+    val clips = remember(version) { store.list() }
+    var playing by remember { mutableStateOf<String?>(null) }
+    val player = remember { arrayOfNulls<MediaPlayer>(1) }
+    DisposableEffect(Unit) {
+        onDispose {
+            runCatching { player[0]?.release() }
+            player[0] = null
+        }
+    }
+    if (clips.isEmpty()) return
+    val fmt = remember { SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()) }
+    SectionCard("Saved clips") {
+        Text(
+            tr("Newest first. Only the last 20 are kept."),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        clips.forEach { f ->
+            val stamp = f.name.removePrefix("voice_").removeSuffix(".wav").toLongOrNull()
+            val seconds = ((f.length() - 44).coerceAtLeast(0) / (VoiceDetector.SAMPLE_RATE * 2)).toInt()
+            Text(
+                (stamp?.let { fmt.format(Date(it)) } ?: f.name) + " · ${seconds}s",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FieldwatchActionButton(
+                    onClick = {
+                        runCatching { player[0]?.release() }
+                        if (playing == f.name) {
+                            playing = null
+                            player[0] = null
+                        } else {
+                            val p = MediaPlayer()
+                            runCatching {
+                                p.setDataSource(f.absolutePath)
+                                p.prepare()
+                                p.setOnCompletionListener { playing = null }
+                                p.start()
+                                player[0] = p
+                                playing = f.name
+                            }.onFailure { p.release(); playing = null }
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                ) { Text(tr(if (playing == f.name) "Stop" else "Play")) }
+                FieldwatchActionButton(
+                    onClick = {
+                        runCatching {
+                            val uri: Uri = FileProvider.getUriForFile(context, "${context.packageName}.files", f)
+                            val send = Intent(Intent.ACTION_SEND).apply {
+                                type = "audio/wav"
+                                putExtra(Intent.EXTRA_STREAM, uri)
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            context.startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                ) { Text(tr("Share")) }
+                FieldwatchActionButton(
+                    onClick = {
+                        if (playing == f.name) {
+                            runCatching { player[0]?.release() }
+                            player[0] = null
+                            playing = null
+                        }
+                        f.delete()
+                        onChanged()
+                    },
+                    modifier = Modifier.weight(1f),
+                ) { Text(tr("Delete")) }
+            }
+        }
+        FieldwatchActionButton(
+            onClick = {
+                runCatching { player[0]?.release() }
+                player[0] = null
+                playing = null
+                store.deleteAll()
+                onChanged()
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) { Text(tr("Delete all clips")) }
+    }
+}

@@ -145,4 +145,18 @@ class GuardTest {
         g.onAccel(3f, 1f, 9.8f, 2020)
         assertFalse(g.alarming())
     }
+
+    @Test
+    fun voiceAlarmsOnlyWhenEnabledAndArmed() {
+        val on = armed(Kind.VOICE)
+        on.onVoiceStart(2000)
+        assertTrue(on.alarming())
+        val off = armed(Kind.MOTION)
+        off.onVoiceStart(2000)
+        assertFalse(off.alarming())
+        val early = GuardMonitor(setOf(Kind.VOICE), countdownMs = 1000L)
+        early.arm(0)
+        early.onVoiceStart(100)
+        assertFalse(early.alarming())
+    }
 }

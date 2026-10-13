@@ -203,7 +203,7 @@ object SitDiff {
             takeaway = "${onlyThis.size} only in this sit · ${onlySecond.size} only in the second · ${both.size} in both.",
             sections = sections,
             extraAttention = extraHits,
-            heading = "FIELDWATCH SIT COMPARE",
+            heading = "BISSA OPSEC SIT COMPARE",
             pdfKicker = "SIT COMPARE",
             pdfTitle = "Sit compare",
             pathFigure = AircraftTrail.applyWalk(

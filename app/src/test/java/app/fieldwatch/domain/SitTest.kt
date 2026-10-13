@@ -260,7 +260,7 @@ class SitTest {
             settings = AppSettings(tagLocation = false),
             operatorPath = emptyList(),
         )
-        assertEquals("FIELDWATCH FIELD DEBRIEF", doc.heading)
+        assertEquals("BISSA OPSEC FIELD DEBRIEF", doc.heading)
         assertTrue(doc.windowLine.contains("last 15 minutes"))
     }
 

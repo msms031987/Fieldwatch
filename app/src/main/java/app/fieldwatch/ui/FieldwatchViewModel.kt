@@ -45,6 +45,8 @@ import app.fieldwatch.domain.FamilyVerdict
 import app.fieldwatch.domain.LogRadio
 import app.fieldwatch.domain.RadioBookmarks
 import app.fieldwatch.domain.RadioKind
+import app.fieldwatch.domain.RadioRole
+import app.fieldwatch.domain.RadioRoles
 import app.fieldwatch.domain.RssiSample
 import app.fieldwatch.domain.Sighting
 import app.fieldwatch.domain.SignatureCandidate
@@ -471,6 +473,24 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
                 )
             }
             startScan()
+        }
+    }
+
+    fun finishOnboarding() {
+        viewModelScope.launch {
+            app.config.update { it.copy(settings = it.settings.copy(onboardingDone = true)) }
+        }
+    }
+
+    fun showOnboarding() {
+        viewModelScope.launch {
+            app.config.update { it.copy(settings = it.settings.copy(onboardingDone = false)) }
+        }
+    }
+
+    fun setLanguage(code: String) {
+        viewModelScope.launch {
+            app.config.update { it.copy(settings = it.settings.copy(language = code)) }
         }
     }
 
@@ -1708,7 +1728,7 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun debriefSubject(doc: DebriefDoc): String =
-        if (doc.heading.startsWith("FIELDWATCH SIT")) doc.heading else "Fieldwatch field debrief — last 15 minutes"
+        if (doc.heading.startsWith("BISSA OPSEC SIT")) doc.heading else "BISSA OpSec field debrief — last 15 minutes"
 
     private suspend fun fieldDebriefDoc(): DebriefDoc {
         publishExport(0.08f, "Gathering sit…")
@@ -2225,6 +2245,15 @@ class FieldwatchViewModel(application: Application) : AndroidViewModel(applicati
 
     fun fleetColor(id: String): Int =
         app.config.fleets.firstOrNull { it.id == id }?.colorIndex ?: 0
+
+    fun fleetRole(id: String): RadioRole {
+        val fleet = app.config.fleets.firstOrNull { it.id == id }
+        return RadioRoles.of(id, fleet?.kind, fleet?.attentionNote.orEmpty())
+    }
+
+    /** Role that colors a radio: alert state wins, then its most urgent signature, else unknown. */
+    fun deviceRole(device: Sighting, alerted: Boolean = false): RadioRole =
+        if (alerted) RadioRole.ATTENTION else RadioRoles.strongest(device.fleetIds.map { fleetRole(it) })
 
     fun fleetAttentionNote(id: String): String =
         app.config.fleets.firstOrNull { it.id == id }?.attentionNote.orEmpty()

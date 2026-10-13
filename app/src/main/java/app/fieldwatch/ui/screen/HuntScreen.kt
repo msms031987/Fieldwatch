@@ -50,10 +50,9 @@ import app.fieldwatch.domain.DeviceExplain
 import app.fieldwatch.domain.MacUtil
 import app.fieldwatch.domain.Hunt
 import app.fieldwatch.domain.HuntCue
-import app.fieldwatch.domain.Palette
 import app.fieldwatch.ui.FieldwatchViewModel
 import app.fieldwatch.ui.component.Sparkline
-import app.fieldwatch.ui.component.rssiColor
+import app.fieldwatch.ui.component.color
 import app.fieldwatch.ui.theme.LocalNightMode
 import app.fieldwatch.ui.theme.nightIf
 import kotlin.math.min
@@ -90,19 +89,16 @@ fun HuntScreen(
     val device = hunt.device
     val rssi = device?.rssi
     val night = LocalNightMode.current
-    val accent = (device?.fleetIds?.firstOrNull()
-        ?.let { Color(Palette.color(vm.fleetColor(it))) }
-        ?: rssi?.let { rssiColor(it) }
-        ?: MaterialTheme.colorScheme.primary)
+    val accent = (device?.let { vm.deviceRole(it).color() } ?: MaterialTheme.colorScheme.primary)
         .nightIf(night)
     val cueColor = when (hunt.cue) {
-        HuntCue.VERY_CLOSE -> Color(0xFF7CFF3D).nightIf(night)
-        HuntCue.CLOSER -> Color(0xFF3DFF9A).nightIf(night)
-        HuntCue.FURTHER -> Color(0xFFFF3D5A).nightIf(night)
+        HuntCue.VERY_CLOSE -> Color(0xFFFFD28A).nightIf(night)
+        HuntCue.CLOSER -> Color(0xFFFFAD32).nightIf(night)
+        HuntCue.FURTHER -> Color(0xFF4497C5).nightIf(night)
         HuntCue.SAME -> MaterialTheme.colorScheme.onSurface
         HuntCue.WAITING -> MaterialTheme.colorScheme.onSurfaceVariant
-        HuntCue.QUIET -> Color(0xFFFFB020).nightIf(night)
-        HuntCue.GONE -> Color(0xFFFF3D5A).nightIf(night)
+        HuntCue.QUIET -> Color(0xFF9AA9B8).nightIf(night)
+        HuntCue.GONE -> Color(0xFFE53E3E).nightIf(night)
     }
     val now = System.currentTimeMillis()
     val heardAgo = if (hunt.lastSeen > 0L) ((now - hunt.lastSeen) / 1000L).coerceAtLeast(0L) else null

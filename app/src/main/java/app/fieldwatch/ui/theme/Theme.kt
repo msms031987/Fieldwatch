@@ -1,43 +1,62 @@
 package app.fieldwatch.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.fieldwatch.R
 
-val Phosphor = Color(0xFF3DFF9A)
-/** Checked switch / slider fill — same hue as Phosphor, less neon. */
-val PhosphorActive = Color(0xFF35D683)
-val Amber = Color(0xFFFFB020)
-val SignalRed = Color(0xFFFF3D5A)
-val Cyan = Color(0xFF4FC3F7)
-val Night = Color(0xFF0B0F14)
-val Panel = Color(0xFF141A22)
-val Panel2 = Color(0xFF1B232D)
+// BISSA palette (from the BISSA App prototype).
+val Gold = Color(0xFFFFAD32)
+/** Checked switch / slider / chip fill — the BISSA accent. */
+val GoldActive = Color(0xFFFFAD32)
+val Amber = Color(0xFFFFAD32)
+val SignalRed = Color(0xFFE53E3E)
+val BissaBlue = Color(0xFF4497C5)
+/** Softer gold for vehicles: same hue as [Gold], lighter, so the two read apart. */
+val GoldSoft = Color(0xFFFFD9A0)
+val Slate = Color(0xFF9AA9B8)
+val Night = Color(0xFF020D18)
+val Panel = Color(0xFF001220)
+val Panel2 = Color(0xFF0A1B2C)
 
 private val DarkColors = darkColorScheme(
-    primary = Phosphor,
-    onPrimary = Color(0xFF003820),
-    primaryContainer = Color(0xFF163326),
-    onPrimaryContainer = Phosphor,
-    secondary = Amber,
-    onSecondary = Color(0xFF2A1A00),
-    tertiary = Cyan,
+    primary = Gold,
+    onPrimary = Color(0xFF001828),
+    primaryContainer = Color(0xFF2B2108),
+    onPrimaryContainer = Gold,
+    secondary = BissaBlue,
+    onSecondary = Color(0xFF001828),
+    tertiary = BissaBlue,
     background = Night,
-    onBackground = Color(0xFFD5DCE3),
+    onBackground = Color(0xFFE6ECF2),
     surface = Panel,
-    onSurface = Color(0xFFD5DCE3),
+    onSurface = Color(0xFFE6ECF2),
     surfaceVariant = Panel2,
-    onSurfaceVariant = Color(0xFF9AA6B2),
-    outline = Color(0xFF2A3340),
+    onSurfaceVariant = Color(0xFF9AA9B8),
+    outline = Color(0xFF1F3347),
+    outlineVariant = Color(0xFF16283A),
     error = SignalRed,
+    surfaceTint = Color.Transparent,
+    surfaceDim = Night,
+    surfaceBright = Color(0xFF10263A),
+    surfaceContainerLowest = Night,
+    surfaceContainerLow = Panel,
+    surfaceContainer = Panel,
+    surfaceContainerHigh = Panel2,
+    surfaceContainerHighest = Color(0xFF10263A),
 )
 
 /**
@@ -63,18 +82,52 @@ private val NightColors = darkColorScheme(
 )
 
 private val LightColors = lightColorScheme(
-    primary = Color(0xFF0B7A48),
+    primary = Color(0xFF9A6400),
     onPrimary = Color.White,
-    secondary = Color(0xFF9A6400),
-    tertiary = Color(0xFF0277BD),
-    background = Color(0xFFF4F6F8),
-    onBackground = Color(0xFF12171C),
+    secondary = Color(0xFF2B6F96),
+    tertiary = Color(0xFF2B6F96),
+    background = Color(0xFFF2F4F7),
+    onBackground = Color(0xFF0A1B2E),
     surface = Color.White,
-    onSurface = Color(0xFF12171C),
-    surfaceVariant = Color(0xFFE6EBEF),
-    onSurfaceVariant = Color(0xFF3F4A55),
-    outline = Color(0xFFC5CDD4),
+    onSurface = Color(0xFF0A1B2E),
+    surfaceVariant = Color(0xFFE4EAF1),
+    onSurfaceVariant = Color(0xFF3F4F60),
+    outline = Color(0xFFC3CED9),
+    outlineVariant = Color(0xFFD9E1E9),
     error = Color(0xFFB00020),
+    surfaceTint = Color.Transparent,
+)
+
+val Montserrat = FontFamily(
+    Font(R.font.montserrat_regular, FontWeight.Normal),
+    Font(R.font.montserrat_medium, FontWeight.Medium),
+    Font(R.font.montserrat_semibold, FontWeight.SemiBold),
+    Font(R.font.montserrat_bold, FontWeight.Bold),
+)
+
+private val BissaTypography = Typography().let { base ->
+    fun TextStyle.m() = copy(fontFamily = Montserrat)
+    Typography(
+        displayLarge = base.displayLarge.m(), displayMedium = base.displayMedium.m(),
+        displaySmall = base.displaySmall.m(), headlineLarge = base.headlineLarge.m(),
+        headlineMedium = base.headlineMedium.m(), headlineSmall = base.headlineSmall.m(),
+        titleLarge = base.titleLarge.m(), titleMedium = base.titleMedium.m(),
+        titleSmall = base.titleSmall.m().copy(letterSpacing = 0.8.sp),
+        bodyLarge = base.bodyLarge.m(), bodyMedium = base.bodyMedium.m(),
+        bodySmall = base.bodySmall.m(),
+        labelLarge = base.labelLarge.m().copy(letterSpacing = 1.sp),
+        labelMedium = base.labelMedium.m().copy(letterSpacing = 1.sp),
+        labelSmall = base.labelSmall.m().copy(letterSpacing = 1.2.sp),
+    )
+}
+
+/** BISSA uses near-square corners (2–4 dp), not Material's pill shapes. */
+private val BissaShapes = Shapes(
+    extraSmall = RoundedCornerShape(2.dp),
+    small = RoundedCornerShape(3.dp),
+    medium = RoundedCornerShape(4.dp),
+    large = RoundedCornerShape(6.dp),
+    extraLarge = RoundedCornerShape(4.dp),
 )
 
 val Mono = TextStyle(
@@ -98,6 +151,8 @@ fun FieldwatchTheme(
     CompositionLocalProvider(LocalNightMode provides nightMode) {
         MaterialTheme(
             colorScheme = scheme,
+            typography = BissaTypography,
+            shapes = BissaShapes,
             content = content,
         )
     }

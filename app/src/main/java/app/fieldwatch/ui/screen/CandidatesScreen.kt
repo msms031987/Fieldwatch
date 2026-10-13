@@ -113,7 +113,7 @@ fun CandidatesScreen(
                     if (report != null && (report.skippedRandomized > 0 || report.skippedHouseLike > 0)) {
                         item {
                             Surface(
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(4.dp),
                                 color = MaterialTheme.colorScheme.surface,
                                 tonalElevation = 1.dp,
                             ) {
@@ -154,7 +154,7 @@ private fun CandidateCard(
 ) {
     val accent = Color(Palette.color(cand.colorIndex)).nightIf(LocalNightMode.current)
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp,
         modifier = Modifier.fillMaxWidth(),

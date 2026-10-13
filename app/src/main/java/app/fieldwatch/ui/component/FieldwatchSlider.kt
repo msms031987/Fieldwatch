@@ -5,7 +5,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import app.fieldwatch.ui.theme.LocalNightMode
-import app.fieldwatch.ui.theme.PhosphorActive
+import app.fieldwatch.ui.theme.GoldActive
 import app.fieldwatch.ui.theme.nightIf
 
 @Composable
@@ -27,9 +27,9 @@ fun FieldwatchSlider(
         steps = steps,
         onValueChangeFinished = onValueChangeFinished,
         colors = SliderDefaults.colors(
-            thumbColor = PhosphorActive.nightIf(LocalNightMode.current),
-            activeTrackColor = PhosphorActive.nightIf(LocalNightMode.current),
-            activeTickColor = PhosphorActive.nightIf(LocalNightMode.current),
+            thumbColor = GoldActive.nightIf(LocalNightMode.current),
+            activeTrackColor = GoldActive.nightIf(LocalNightMode.current),
+            activeTickColor = GoldActive.nightIf(LocalNightMode.current),
         ),
     )
 }
